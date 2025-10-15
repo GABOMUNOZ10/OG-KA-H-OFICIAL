@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OG Kash - Finanzas Personales</title>
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+
+    <div id="auth-screen" class="screen active">
+        <div class="logo-container">
+            <img src="/public/assets/LogoOG_kash.png" alt="OG Kash Logo" class="app-logo"> <h1>OG Kash</h1>
+        </div>
+
+        <form id="login-form" class="auth-form">
+            <h2>Iniciar Sesión</h2>
+            <input type="text" id="login-user" placeholder="Usuario:" required>
+            <input type="password" id="login-password" placeholder="Contraseña:" required>
+            <p class="forgot-password">¿Olvidaste la Contraseña?</p>
+            <button type="submit" class="btn primary">Login</button>
+            <button type="button" class="btn secondary" id="show-signup">Sign up</button>
+        </form>
+
+        <form id="signup-form" class="auth-form hidden">
+            <h2>Registrarse</h2>
+            <input type="text" id="signup-user" placeholder="Usuario:" required>
+            <input type="password" id="signup-password" placeholder="Contraseña:" required>
+            <button type="submit" class="btn primary">Sign up</button>
+            <button type="button" class="btn secondary" id="show-login">Volver a Login</button>
+        </form>
+    </div>
+
+    <div id="dashboard-screen" class="screen hidden">
+        <header>
+            <h1 class="header-title">Dashboard</h1>
+            <p>Hola, <span id="current-user">Usuario</span></p>
+        </header>
+
+        <section class="balance-summary">
+            <h3>Saldo Actual</h3>
+            <p id="current-balance" class="balance-amount">$0.00</p>
+        </section>
+
+        <section class="transaction-list-summary">
+            <h3>Últimas Transacciones</h3>
+            <ul id="transaction-list">
+                <li>No hay transacciones aún.</li>
+            </ul>
+        </section>
+
+        <div class="fab-container">
+            <button id="add-transaction-btn" class="fab">+</button>
+        </div>
+        
+        <button id="logout-btn" class="btn tertiary">Cerrar Sesión</button>
+    </div>
+
+    <div id="transaction-screen" class="screen hidden">
+        <header>
+            <button id="back-to-dashboard" class="back-btn">←</button>
+            <h1 class="header-title">Nueva Transacción</h1>
+        </header>
+
+        <form id="transaction-form">
+            <label for="type">Tipo:</label>
+            <select id="transaction-type" required>
+                <option value="income">Ingreso (Recibido)</option>
+                <option value="expense">Gasto</option>
+            </select>
+            
+            <label for="amount">Monto ($):</label>
+            <input type="number" id="transaction-amount" step="0.01" min="0.01" required>
+
+            <label for="description">Descripción:</label>
+            <input type="text" id="transaction-description" required>
+
+            <button type="submit" class="btn primary">Guardar Transacción</button>
+        </form>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
