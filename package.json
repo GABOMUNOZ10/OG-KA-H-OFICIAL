@@ -1,17 +1,15 @@
 {
+  "type": "module",
   "name": "og-kash-2",
   "version": "1.0.0",
-  "description": "",
-  "main": "script.js",
+  "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
-    "cors": "^2.8.5",
-    "express": "^4.19.2",
-    "pg": "^8.11.3"
+    "express": "^5.1.0",
+    "pg": "^8.16.3",
+    "cors": "^2.8.5"
   }
 }
+
