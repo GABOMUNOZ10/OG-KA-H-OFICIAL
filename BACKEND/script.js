@@ -1,5 +1,5 @@
 // === CONFIGURACIÓN ===
-const API_URL = 'https://og-kash-production.up.railway.app';
+const API_URL = process.env.API_URL || 'http://localhost:5500';
 
 // === REFERENCIAS DEL DOM ===
 const screens = {
