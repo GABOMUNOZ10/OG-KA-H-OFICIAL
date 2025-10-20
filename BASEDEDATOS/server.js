@@ -1,8 +1,25 @@
+import express from "express";
+import cors from "cors";
 import pkg from "pg";
+import dotenv from "dotenv";
+
+dotenv.config();
+
 const { Pool } = pkg;
+const app = express();
+const PORT = process.env.PORT || 5500;
+
+app.use(cors({
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type"]
+}));
+
+app.use(express.json());
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgresql://localhost/temp'
+  connectionString: process.env.DATABASE_URL || 'postgresql://localhost/temp',
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
 pool.connect((err, client, release) => {
@@ -18,8 +35,7 @@ pool.connect((err, client, release) => {
 app.post("/api/usuarios", async (req, res) => {
   try {
     console.log("📝 Intentando registrar usuario:", req.body);
-    const { nombre, correo, contrasena } = req.body;
-    
+    // ... resto del código sin duplicar
     if (!nombre || !correo || !contrasena) {
       return res.status(400).json({ error: "Campos requeridos faltantes" });
     }
