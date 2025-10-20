@@ -1,25 +1,8 @@
-import express from "express";
-import cors from "cors";
 import pkg from "pg";
-
 const { Pool } = pkg;
-const app = express();
-const PORT = 5500;
-
-app.use(cors({
-  origin: "*",
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type"]
-}));
-
-app.use(express.json());
 
 const pool = new Pool({
-  user: "postgres",
-  host: "localhost",
-  database: "OG_KA$H",
-  password: "123456789*",
-  port: 5432,
+  connectionString: process.env.DATABASE_URL || 'postgresql://localhost/temp'
 });
 
 pool.connect((err, client, release) => {
