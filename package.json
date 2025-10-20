@@ -1,0 +1,18 @@
+{
+  "name": "og-kash",
+  "version": "1.0.0",
+  "description": "OG Kash - Personal Finance Manager",
+  "main": "BASEDEDATOS/server.js",
+  "scripts": {
+    "start": "node BASEDEDATOS/server.js"
+  },
+  "engines": {
+    "node": "18.x"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "pg": "^8.10.0",
+    "dotenv": "^16.3.1"
+  }
+}
