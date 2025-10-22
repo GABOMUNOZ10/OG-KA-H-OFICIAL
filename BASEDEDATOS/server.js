@@ -35,7 +35,8 @@ pool.connect((err, client, release) => {
 app.post("/api/usuarios", async (req, res) => {
   try {
     console.log("📝 Intentando registrar usuario:", req.body);
-    // ... resto del código sin duplicar
+    const { nombre, correo, contrasena } = req.body;
+    
     if (!nombre || !correo || !contrasena) {
       return res.status(400).json({ error: "Campos requeridos faltantes" });
     }
