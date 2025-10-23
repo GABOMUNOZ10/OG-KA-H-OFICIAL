@@ -30,7 +30,8 @@ pool.connect((err, client, release) => {
     release();
   }
 });
-// ====== CREAR TABLA DESCRIPCIONES (TEMPORAL) ======
+
+// ====== CREAR TABLA DESCRIPCIONES (TEMPORAL - BORRAR DESPUÉS) ======
 async function crearTablaDescripciones() {
   try {
     await pool.query(`
@@ -43,18 +44,19 @@ async function crearTablaDescripciones() {
         UNIQUE(id_usuario, descripcion)
       );
     `);
-    console.log("✅ Tabla descripciones_personalizadas creada o ya existe");
+    console.log("✅✅✅ Tabla descripciones_personalizadas creada o ya existe ✅✅✅");
     
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_descripciones_usuario ON descripciones_personalizadas(id_usuario);`);
-    console.log("✅ Índice creado");
+    console.log("✅✅✅ Índice creado ✅✅✅");
   } catch (err) {
-    console.log("⚠️ Error al crear tabla:", err.message);
+    console.log("⚠️⚠️⚠️ Error al crear tabla:", err.message);
   }
 }
 
-// Ejecutar la función
+// EJECUTAR LA FUNCIÓN
 crearTablaDescripciones();
 // ====== FIN CÓDIGO TEMPORAL ======
+
 // --- USUARIOS ---
 app.post("/api/usuarios", async (req, res) => {
   try {
@@ -224,15 +226,9 @@ app.post("/api/presupuestos", async (req, res) => {
   console.log("💰 Intentando crear presupuesto:", req.body);
   const { id_usuario, categoria, monto_limite, periodo_inicio, periodo_fin } = req.body;
   
-  console.log("Valores recibidos - id_usuario:", id_usuario, "| categoria:", categoria, "| monto_limite:", monto_limite, "| periodo_inicio:", periodo_inicio, "| periodo_fin:", periodo_fin);
-  
-  if (id_usuario === undefined || id_usuario === null || 
-      categoria === undefined || categoria === null || 
-      monto_limite === undefined || monto_limite === null ||
-      periodo_inicio === undefined || periodo_inicio === null ||
-      periodo_fin === undefined || periodo_fin === null) {
-    console.error("❌ Datos incompletos - Falta algún campo requerido");
-    return res.status(400).json({ error: "Todos los campos son obligatorios (id_usuario, categoria, monto_limite, periodo_inicio, periodo_fin)" });
+  if (id_usuario === undefined || categoria === undefined || monto_limite === undefined ||
+      periodo_inicio === undefined || periodo_fin === undefined) {
+    return res.status(400).json({ error: "Todos los campos son obligatorios" });
   }
   
   if (parseFloat(monto_limite) <= 0) {
@@ -246,8 +242,6 @@ app.post("/api/presupuestos", async (req, res) => {
   }
   
   try {
-    console.log("✅ Validación pasada. Insertando en DB...");
-    
     const result = await pool.query(
       "INSERT INTO presupuestos (id_usuario, descripcion, monto_objetivo, monto_actual, bloqueado, categoria, periodo_inicio, periodo_fin) VALUES ($1, $2, $3, $4, false, $5, $6, $7) RETURNING *",
       [id_usuario, `Presupuesto ${categoria}`, parseFloat(monto_limite), 0, categoria, periodo_inicio, periodo_fin]
@@ -256,7 +250,6 @@ app.post("/api/presupuestos", async (req, res) => {
     res.json(result.rows[0]);
   } catch (err) {
     console.error("❌ Error al crear presupuesto:", err.message);
-    console.error("Stack:", err.stack);
     res.status(500).json({ error: "Error al crear presupuesto", details: err.message });
   }
 });
@@ -279,21 +272,9 @@ app.get("/api/presupuestos/:id_usuario", async (req, res) => {
       [id_usuario]
     );
     console.log(`✅ ${result.rows.length} presupuestos encontrados`);
-    
-    result.rows.forEach(p => {
-      console.log(`  Presupuesto ${p.id_ahorro}:`, {
-        categoria: p.categoria,
-        monto_objetivo: p.monto_objetivo,
-        gastos_actuales: p.gastos_actuales,
-        periodo_inicio: p.periodo_inicio,
-        periodo_fin: p.periodo_fin
-      });
-    });
-    
     res.json(result.rows);
   } catch (err) {
     console.error("❌ Error al obtener presupuestos:", err.message);
-    console.error("Detalles del error:", err);
     res.status(500).json({ error: "Error al obtener presupuestos", details: err.message });
   }
 });
@@ -327,8 +308,6 @@ app.get("/api/balance/:id_usuario", async (req, res) => {
     
     const balance = parseFloat(ingresos.rows[0].total) - parseFloat(gastos.rows[0].total);
     
-    console.log(`✅ Balance calculado - Ingresos: ${ingresos.rows[0].total}, Gastos: ${gastos.rows[0].total}, Balance: ${balance}`);
-    
     res.json({
       ingresos: parseFloat(ingresos.rows[0].total),
       gastos: parseFloat(gastos.rows[0].total),
@@ -341,7 +320,6 @@ app.get("/api/balance/:id_usuario", async (req, res) => {
 });
 
 // === DESCRIPCIONES PERSONALIZADAS ===
-
 app.post("/api/descripciones", async (req, res) => {
   console.log("📝 Intentando crear descripción personalizada:", req.body);
   const { id_usuario, descripcion, tipo } = req.body;
@@ -363,7 +341,6 @@ app.post("/api/descripciones", async (req, res) => {
     res.json(result.rows[0]);
   } catch (err) {
     if (err.code === '23505') {
-      console.error("❌ Descripción duplicada");
       return res.status(409).json({ error: "Esta descripción ya existe" });
     }
     console.error("❌ Error al crear descripción:", err.message);
@@ -400,8 +377,6 @@ app.get("/api/descripciones/:id_usuario", async (req, res) => {
 app.put("/api/descripciones/:id", async (req, res) => {
   const { id } = req.params;
   const { descripcion, tipo } = req.body;
-  
-  console.log("✏️ Editando descripción:", id);
   
   if (!descripcion || !tipo) {
     return res.status(400).json({ error: "Todos los campos son obligatorios" });
@@ -456,17 +431,4 @@ app.delete("/api/descripciones/:id", async (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`✅ Servidor corriendo en http://localhost:${PORT}`);
-  console.log(`📡 Endpoints disponibles:`);
-  console.log(`   - POST /api/usuarios`);
-  console.log(`   - POST /api/login`);
-  console.log(`   - POST /api/ingresos`);
-  console.log(`   - GET  /api/ingresos/:id_usuario`);
-  console.log(`   - POST /api/gastos`);
-  console.log(`   - GET  /api/gastos/:id_usuario`);
-  console.log(`   - POST /api/presupuestos`);
-  console.log(`   - GET  /api/balance/:id_usuario`);
-  console.log(`   - POST /api/descripciones`);
-  console.log(`   - GET  /api/descripciones/:id_usuario`);
-  console.log(`   - PUT  /api/descripciones/:id`);
-  console.log(`   - DELETE /api/descripciones/:id`);
 });
