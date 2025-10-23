@@ -31,27 +31,7 @@ pool.connect((err, client, release) => {
   }
 });
 
-// ====== CREAR TABLA DESCRIPCIONES (TEMPORAL - BORRAR DESPUÉS) ======
-async function crearTablaDescripciones() {
-  try {
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS descripciones_personalizadas (
-        id_descripcion SERIAL PRIMARY KEY,
-        id_usuario INTEGER NOT NULL REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
-        descripcion TEXT NOT NULL,
-        tipo VARCHAR(10) CHECK (tipo IN ('ingreso', 'gasto', 'ambos')),
-        fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        UNIQUE(id_usuario, descripcion)
-      );
-    `);
-    console.log("✅✅✅ Tabla descripciones_personalizadas creada o ya existe ✅✅✅");
-    
-    await pool.query(`CREATE INDEX IF NOT EXISTS idx_descripciones_usuario ON descripciones_personalizadas(id_usuario);`);
-    console.log("✅✅✅ Índice creado ✅✅✅");
-  } catch (err) {
-    console.log("⚠️⚠️⚠️ Error al crear tabla:", err.message);
-  }
-}
+
 
 // EJECUTAR LA FUNCIÓN
 crearTablaDescripciones();
