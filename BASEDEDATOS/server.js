@@ -31,12 +31,6 @@ pool.connect((err, client, release) => {
   }
 });
 
-
-
-// EJECUTAR LA FUNCIÓN
-crearTablaDescripciones();
-// ====== FIN CÓDIGO TEMPORAL ======
-
 // --- USUARIOS ---
 app.post("/api/usuarios", async (req, res) => {
   try {
@@ -206,9 +200,15 @@ app.post("/api/presupuestos", async (req, res) => {
   console.log("💰 Intentando crear presupuesto:", req.body);
   const { id_usuario, categoria, monto_limite, periodo_inicio, periodo_fin } = req.body;
   
-  if (id_usuario === undefined || categoria === undefined || monto_limite === undefined ||
-      periodo_inicio === undefined || periodo_fin === undefined) {
-    return res.status(400).json({ error: "Todos los campos son obligatorios" });
+  console.log("Valores recibidos - id_usuario:", id_usuario, "| categoria:", categoria, "| monto_limite:", monto_limite, "| periodo_inicio:", periodo_inicio, "| periodo_fin:", periodo_fin);
+  
+  if (id_usuario === undefined || id_usuario === null || 
+      categoria === undefined || categoria === null || 
+      monto_limite === undefined || monto_limite === null ||
+      periodo_inicio === undefined || periodo_inicio === null ||
+      periodo_fin === undefined || periodo_fin === null) {
+    console.error("❌ Datos incompletos - Falta algún campo requerido");
+    return res.status(400).json({ error: "Todos los campos son obligatorios (id_usuario, categoria, monto_limite, periodo_inicio, periodo_fin)" });
   }
   
   if (parseFloat(monto_limite) <= 0) {
@@ -222,6 +222,8 @@ app.post("/api/presupuestos", async (req, res) => {
   }
   
   try {
+    console.log("✅ Validación pasada. Insertando en DB...");
+    
     const result = await pool.query(
       "INSERT INTO presupuestos (id_usuario, descripcion, monto_objetivo, monto_actual, bloqueado, categoria, periodo_inicio, periodo_fin) VALUES ($1, $2, $3, $4, false, $5, $6, $7) RETURNING *",
       [id_usuario, `Presupuesto ${categoria}`, parseFloat(monto_limite), 0, categoria, periodo_inicio, periodo_fin]
@@ -230,6 +232,7 @@ app.post("/api/presupuestos", async (req, res) => {
     res.json(result.rows[0]);
   } catch (err) {
     console.error("❌ Error al crear presupuesto:", err.message);
+    console.error("Stack:", err.stack);
     res.status(500).json({ error: "Error al crear presupuesto", details: err.message });
   }
 });
@@ -252,9 +255,21 @@ app.get("/api/presupuestos/:id_usuario", async (req, res) => {
       [id_usuario]
     );
     console.log(`✅ ${result.rows.length} presupuestos encontrados`);
+    
+    result.rows.forEach(p => {
+      console.log(`  Presupuesto ${p.id_ahorro}:`, {
+        categoria: p.categoria,
+        monto_objetivo: p.monto_objetivo,
+        gastos_actuales: p.gastos_actuales,
+        periodo_inicio: p.periodo_inicio,
+        periodo_fin: p.periodo_fin
+      });
+    });
+    
     res.json(result.rows);
   } catch (err) {
     console.error("❌ Error al obtener presupuestos:", err.message);
+    console.error("Detalles del error:", err);
     res.status(500).json({ error: "Error al obtener presupuestos", details: err.message });
   }
 });
@@ -288,6 +303,8 @@ app.get("/api/balance/:id_usuario", async (req, res) => {
     
     const balance = parseFloat(ingresos.rows[0].total) - parseFloat(gastos.rows[0].total);
     
+    console.log(`✅ Balance calculado - Ingresos: ${ingresos.rows[0].total}, Gastos: ${gastos.rows[0].total}, Balance: ${balance}`);
+    
     res.json({
       ingresos: parseFloat(ingresos.rows[0].total),
       gastos: parseFloat(gastos.rows[0].total),
@@ -299,116 +316,15 @@ app.get("/api/balance/:id_usuario", async (req, res) => {
   }
 });
 
-// === DESCRIPCIONES PERSONALIZADAS ===
-app.post("/api/descripciones", async (req, res) => {
-  console.log("📝 Intentando crear descripción personalizada:", req.body);
-  const { id_usuario, descripcion, tipo } = req.body;
-  
-  if (!id_usuario || !descripcion || !tipo) {
-    return res.status(400).json({ error: "Todos los campos son obligatorios" });
-  }
-  
-  if (descripcion.trim() === "") {
-    return res.status(400).json({ error: "La descripción no puede estar vacía" });
-  }
-  
-  try {
-    const result = await pool.query(
-      "INSERT INTO descripciones_personalizadas (id_usuario, descripcion, tipo) VALUES ($1, $2, $3) RETURNING *",
-      [id_usuario, descripcion.trim(), tipo]
-    );
-    console.log("✅ Descripción creada:", result.rows[0]);
-    res.json(result.rows[0]);
-  } catch (err) {
-    if (err.code === '23505') {
-      return res.status(409).json({ error: "Esta descripción ya existe" });
-    }
-    console.error("❌ Error al crear descripción:", err.message);
-    res.status(500).json({ error: "Error al crear descripción", details: err.message });
-  }
-});
-
-app.get("/api/descripciones/:id_usuario", async (req, res) => {
-  const { id_usuario } = req.params;
-  const { tipo } = req.query;
-  
-  console.log("📥 Obteniendo descripciones para usuario:", id_usuario, "tipo:", tipo);
-  
-  try {
-    let query = "SELECT * FROM descripciones_personalizadas WHERE id_usuario = $1";
-    let params = [id_usuario];
-    
-    if (tipo && tipo !== 'ambos') {
-      query += " AND (tipo = $2 OR tipo = 'ambos')";
-      params.push(tipo);
-    }
-    
-    query += " ORDER BY fecha_creacion DESC";
-    
-    const result = await pool.query(query, params);
-    console.log(`✅ ${result.rows.length} descripciones encontradas`);
-    res.json(result.rows);
-  } catch (err) {
-    console.error("❌ Error al obtener descripciones:", err.message);
-    res.status(500).json({ error: "Error al obtener descripciones" });
-  }
-});
-
-app.put("/api/descripciones/:id", async (req, res) => {
-  const { id } = req.params;
-  const { descripcion, tipo } = req.body;
-  
-  if (!descripcion || !tipo) {
-    return res.status(400).json({ error: "Todos los campos son obligatorios" });
-  }
-  
-  if (descripcion.trim() === "") {
-    return res.status(400).json({ error: "La descripción no puede estar vacía" });
-  }
-  
-  try {
-    const result = await pool.query(
-      "UPDATE descripciones_personalizadas SET descripcion = $1, tipo = $2 WHERE id_descripcion = $3 RETURNING *",
-      [descripcion.trim(), tipo, id]
-    );
-    
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: "Descripción no encontrada" });
-    }
-    
-    console.log("✅ Descripción actualizada:", result.rows[0]);
-    res.json(result.rows[0]);
-  } catch (err) {
-    if (err.code === '23505') {
-      return res.status(409).json({ error: "Esta descripción ya existe" });
-    }
-    console.error("❌ Error al actualizar descripción:", err.message);
-    res.status(500).json({ error: "Error al actualizar descripción" });
-  }
-});
-
-app.delete("/api/descripciones/:id", async (req, res) => {
-  const { id } = req.params;
-  console.log("🗑️ Eliminando descripción:", id);
-  
-  try {
-    const result = await pool.query(
-      "DELETE FROM descripciones_personalizadas WHERE id_descripcion = $1 RETURNING *",
-      [id]
-    );
-    
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: "Descripción no encontrada" });
-    }
-    
-    console.log("✅ Descripción eliminada");
-    res.json({ message: "Descripción eliminada correctamente" });
-  } catch (err) {
-    console.error("❌ Error al eliminar descripción:", err.message);
-    res.status(500).json({ error: "Error al eliminar descripción" });
-  }
-});
-
 app.listen(PORT, () => {
   console.log(`✅ Servidor corriendo en http://localhost:${PORT}`);
+  console.log(`📡 Endpoints disponibles:`);
+  console.log(`   - POST /api/usuarios`);
+  console.log(`   - POST /api/login`);
+  console.log(`   - POST /api/ingresos`);
+  console.log(`   - GET  /api/ingresos/:id_usuario`);
+  console.log(`   - POST /api/gastos`);
+  console.log(`   - GET  /api/gastos/:id_usuario`);
+  console.log(`   - POST /api/presupuestos`);
+  console.log(`   - GET  /api/balance/:id_usuario`);
 });
