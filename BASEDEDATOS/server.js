@@ -202,7 +202,6 @@ app.post("/api/presupuestos", async (req, res) => {
   
   console.log("Valores recibidos - id_usuario:", id_usuario, "| categoria:", categoria, "| monto_limite:", monto_limite, "| periodo_inicio:", periodo_inicio, "| periodo_fin:", periodo_fin);
   
-  // Validación
   if (id_usuario === undefined || id_usuario === null || 
       categoria === undefined || categoria === null || 
       monto_limite === undefined || monto_limite === null ||
@@ -212,12 +211,10 @@ app.post("/api/presupuestos", async (req, res) => {
     return res.status(400).json({ error: "Todos los campos son obligatorios (id_usuario, categoria, monto_limite, periodo_inicio, periodo_fin)" });
   }
   
-  // Validar que monto sea positivo
   if (parseFloat(monto_limite) <= 0) {
     return res.status(400).json({ error: "El monto debe ser mayor a 0" });
   }
   
-  // Validar que las fechas sean válidas
   const inicio = new Date(periodo_inicio);
   const fin = new Date(periodo_fin);
   if (inicio >= fin) {
@@ -259,7 +256,6 @@ app.get("/api/presupuestos/:id_usuario", async (req, res) => {
     );
     console.log(`✅ ${result.rows.length} presupuestos encontrados`);
     
-    // Log detallado de cada presupuesto
     result.rows.forEach(p => {
       console.log(`  Presupuesto ${p.id_ahorro}:`, {
         categoria: p.categoria,
@@ -320,6 +316,120 @@ app.get("/api/balance/:id_usuario", async (req, res) => {
   }
 });
 
+// === DESCRIPCIONES PERSONALIZADAS ===
+
+app.post("/api/descripciones", async (req, res) => {
+  console.log("📝 Intentando crear descripción personalizada:", req.body);
+  const { id_usuario, descripcion, tipo } = req.body;
+  
+  if (!id_usuario || !descripcion || !tipo) {
+    return res.status(400).json({ error: "Todos los campos son obligatorios" });
+  }
+  
+  if (descripcion.trim() === "") {
+    return res.status(400).json({ error: "La descripción no puede estar vacía" });
+  }
+  
+  try {
+    const result = await pool.query(
+      "INSERT INTO descripciones_personalizadas (id_usuario, descripcion, tipo) VALUES ($1, $2, $3) RETURNING *",
+      [id_usuario, descripcion.trim(), tipo]
+    );
+    console.log("✅ Descripción creada:", result.rows[0]);
+    res.json(result.rows[0]);
+  } catch (err) {
+    if (err.code === '23505') {
+      console.error("❌ Descripción duplicada");
+      return res.status(409).json({ error: "Esta descripción ya existe" });
+    }
+    console.error("❌ Error al crear descripción:", err.message);
+    res.status(500).json({ error: "Error al crear descripción", details: err.message });
+  }
+});
+
+app.get("/api/descripciones/:id_usuario", async (req, res) => {
+  const { id_usuario } = req.params;
+  const { tipo } = req.query;
+  
+  console.log("📥 Obteniendo descripciones para usuario:", id_usuario, "tipo:", tipo);
+  
+  try {
+    let query = "SELECT * FROM descripciones_personalizadas WHERE id_usuario = $1";
+    let params = [id_usuario];
+    
+    if (tipo && tipo !== 'ambos') {
+      query += " AND (tipo = $2 OR tipo = 'ambos')";
+      params.push(tipo);
+    }
+    
+    query += " ORDER BY fecha_creacion DESC";
+    
+    const result = await pool.query(query, params);
+    console.log(`✅ ${result.rows.length} descripciones encontradas`);
+    res.json(result.rows);
+  } catch (err) {
+    console.error("❌ Error al obtener descripciones:", err.message);
+    res.status(500).json({ error: "Error al obtener descripciones" });
+  }
+});
+
+app.put("/api/descripciones/:id", async (req, res) => {
+  const { id } = req.params;
+  const { descripcion, tipo } = req.body;
+  
+  console.log("✏️ Editando descripción:", id);
+  
+  if (!descripcion || !tipo) {
+    return res.status(400).json({ error: "Todos los campos son obligatorios" });
+  }
+  
+  if (descripcion.trim() === "") {
+    return res.status(400).json({ error: "La descripción no puede estar vacía" });
+  }
+  
+  try {
+    const result = await pool.query(
+      "UPDATE descripciones_personalizadas SET descripcion = $1, tipo = $2 WHERE id_descripcion = $3 RETURNING *",
+      [descripcion.trim(), tipo, id]
+    );
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Descripción no encontrada" });
+    }
+    
+    console.log("✅ Descripción actualizada:", result.rows[0]);
+    res.json(result.rows[0]);
+  } catch (err) {
+    if (err.code === '23505') {
+      return res.status(409).json({ error: "Esta descripción ya existe" });
+    }
+    console.error("❌ Error al actualizar descripción:", err.message);
+    res.status(500).json({ error: "Error al actualizar descripción" });
+  }
+});
+
+app.delete("/api/descripciones/:id", async (req, res) => {
+  const { id } = req.params;
+  console.log("🗑️ Eliminando descripción:", id);
+  
+  try {
+    const result = await pool.query(
+      "DELETE FROM descripciones_personalizadas WHERE id_descripcion = $1 RETURNING *",
+      [id]
+    );
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Descripción no encontrada" });
+    }
+    
+    console.log("✅ Descripción eliminada");
+    res.json({ message: "Descripción eliminada correctamente" });
+  } catch (err) {
+    console.error("❌ Error al eliminar descripción:", err.message);
+    res.status(500).json({ error: "Error al eliminar descripción" });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`✅ Servidor corriendo en http://localhost:${PORT}`);
   console.log(`📡 Endpoints disponibles:`);
@@ -331,5 +441,8 @@ app.listen(PORT, () => {
   console.log(`   - GET  /api/gastos/:id_usuario`);
   console.log(`   - POST /api/presupuestos`);
   console.log(`   - GET  /api/balance/:id_usuario`);
+  console.log(`   - POST /api/descripciones`);
+  console.log(`   - GET  /api/descripciones/:id_usuario`);
+  console.log(`   - PUT  /api/descripciones/:id`);
+  console.log(`   - DELETE /api/descripciones/:id`);
 });
-// Force redeploy
