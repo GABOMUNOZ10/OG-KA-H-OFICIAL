@@ -1,12 +1,12 @@
 /* Variables de color */
 :root {
-    --primary-color: #133d37;
-    --secondary-color: #1a5a52;
+    --primary-color: #2e7d32;
+    --secondary-color: #4caf50;
     --background-color: #ffffff;
     --text-color: #333333;
     --light-gray: #f4f4f4;
     --expense-color: #e53935;
-    --income-color: #4caf50;
+    --income-color: #43a047;
 }
 
 /* Base y Reset */
@@ -36,10 +36,11 @@ body {
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
     min-height: 100vh;
     padding: 20px;
-    display: block;
+    display: block; /* ✅ CAMBIADO: por defecto visible */
     position: relative;
 }
 
+/* ✅ CRÍTICO: Ocultar pantallas con .hidden */
 .screen.hidden {
     display: none !important;
 }
@@ -128,18 +129,18 @@ h2 {
 }
 
 .btn.primary {
-    background-color: var(--primary-color);
+    background-color: var(--secondary-color);
     color: white;
 }
 
 .btn.primary:hover {
-    background-color: var(--secondary-color);
+    background-color: #43a047;
 }
 
 .btn.secondary {
     background-color: white;
     color: var(--primary-color);
-    border: 2px solid var(--primary-color);
+    border: 1px solid var(--primary-color);
 }
 
 .btn.secondary:hover {
@@ -169,16 +170,72 @@ header {
     color: var(--primary-color);
 }
 
-.balance-summary {
-    text-align: center;
+/* Gráfico en Dashboard */
+.dashboard-chart {
+    background: white;
     padding: 20px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.dashboard-chart h3 {
+    color: var(--primary-color);
+    text-align: center;
+    margin-bottom: 15px;
+    font-size: 18px;
+}
+
+.dashboard-chart canvas {
+    max-height: 220px;
+    margin: 0 auto;
+    display: block;
+}
+
+.chart-legend {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-top: 15px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #666;
+}
+
+.legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.legend-color.expenses {
+    background: #e53935; /* Rojo para gastos */
+}
+
+.legend-color.income {
+    background: #43a047; /* Verde para ingresos */
+}
+
+.balance-summary {
     background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
     border-radius: 15px;
     margin-bottom: 20px;
     color: white;
+    padding: 0;
+    overflow: hidden;
 }
 
-.balance-summary h3 {
+.balance-card {
+    text-align: center;
+    padding: 20px;
+}
+
+.balance-card h3 {
     color: white;
     margin-bottom: 10px;
     font-size: 16px;
@@ -190,6 +247,37 @@ header {
     font-weight: bold;
     color: white;
     margin: 10px 0;
+}
+
+.balance-details-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    background: rgba(255, 255, 255, 0.1);
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.detail-card {
+    padding: 15px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.detail-card:first-child {
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.detail-label {
+    font-size: 14px;
+    opacity: 0.9;
+    color: white;
+}
+
+.detail-card strong {
+    font-size: 18px;
+    color: white;
+    font-weight: bold;
 }
 
 .balance-details {
@@ -231,17 +319,22 @@ header {
 }
 
 .income-btn {
-    background-color: var(--primary-color);
+    background-color: var(--income-color);
     color: white;
 }
 
 .expense-btn {
-    background-color: var(--primary-color);
+    background-color: var(--expense-color);
     color: white;
 }
 
 .budget-btn {
-    background-color: var(--primary-color);
+    background-color: #ff9800;
+    color: white;
+}
+
+.report-btn {
+    background-color: #2196F3;
     color: white;
 }
 
@@ -417,7 +510,7 @@ form button {
 
 .budget-progress {
     height: 100%;
-    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    background: linear-gradient(90deg, var(--income-color), var(--secondary-color));
     transition: width 0.3s;
 }
 
@@ -446,6 +539,159 @@ form button {
     text-align: center;
     margin-top: 10px;
     font-weight: bold;
+}
+
+/* Reportes */
+#reports-screen {
+    background: white;
+    padding: 30px 20px;
+}
+
+#reports-screen header {
+    display: none; /* Ocultar header en reportes para look más limpio */
+}
+
+.report-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-bottom: 30px;
+    background: white;
+    padding: 0;
+}
+
+.report-card {
+    background: transparent;
+    padding: 15px 0;
+    border-radius: 0;
+    text-align: left;
+    box-shadow: none;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.report-card:last-child {
+    border-bottom: none;
+}
+
+.report-card h3 {
+    font-size: 16px;
+    color: #2e7d32;
+    margin: 0;
+    font-weight: 600;
+}
+
+.report-amount {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+    color: #333;
+}
+
+.income-card .report-amount {
+    color: #333;
+}
+
+.expense-card .report-amount {
+    color: #333;
+}
+
+.balance-card {
+    order: -1; /* Mover al principio */
+    padding-bottom: 25px;
+}
+
+.balance-card .report-amount {
+    color: #2e7d32;
+    font-size: 22px;
+}
+
+.report-title {
+    text-align: center;
+    color: #2e7d32;
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 30px;
+}
+
+.report-filters {
+    display: none; /* Ocultar filtros para simplificar */
+}
+
+.report-chart {
+    background: transparent;
+    padding: 20px 0;
+    border-radius: 0;
+    margin-bottom: 30px;
+    box-shadow: none;
+}
+
+.report-chart h3 {
+    display: none; /* Ocultar título del gráfico */
+}
+
+.report-chart canvas {
+    max-height: 250px;
+    margin: 0 auto;
+    display: block;
+}
+
+.report-chart-legend {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-top: 20px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #666;
+}
+
+.legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.legend-color.expenses {
+    background: #81C784; /* Verde claro */
+}
+
+.legend-color.income {
+    background: #2e7d32; /* Verde oscuro */
+}
+
+.report-transactions {
+    display: none; /* Ocultar lista de transacciones */
+}
+
+.report-add-btn {
+    width: 100%;
+    max-width: 300px;
+    margin: 20px auto;
+    display: block;
+    padding: 15px;
+    background: #2e7d32;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(46, 125, 50, 0.3);
+    transition: all 0.3s;
+}
+
+.report-add-btn:hover {
+    background: #1b5e20;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(46, 125, 50, 0.4);
 }
 
 /* Media Query */
