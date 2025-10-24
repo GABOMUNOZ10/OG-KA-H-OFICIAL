@@ -18,7 +18,7 @@ app.use(cors({
 app.use(express.json());
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgresql://postgres:ErMgAfoTewGrcfRebkisKqLWvIoIyniA@postgres-tgex.railway.internal:5432/railway',
+  connectionString: process.env.DATABASE_URL,
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
@@ -30,6 +30,7 @@ pool.connect((err, client, release) => {
     release();
   }
 });
+
 // ====== CREAR TABLAS AUTOMÁTICAMENTE ======
 async function crearTablas() {
   try {
@@ -116,6 +117,7 @@ async function crearTablas() {
 
 crearTablas();
 // ====== FIN CÓDIGO AUTOMÁTICO ======
+
 // --- USUARIOS ---
 app.post("/api/usuarios", async (req, res) => {
   try {
