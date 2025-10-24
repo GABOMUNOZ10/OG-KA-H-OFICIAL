@@ -17,16 +17,21 @@ app.use(cors({
 
 app.use(express.json());
 
+// ✅ CONFIGURACIÓN CORREGIDA PARA RAILWAY
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+  connectionString: process.env.DATABASE_URL || "postgresql://postgres:ErMgAfoTewGrcfRebkisKqLWvIoIyniA@postgres-tgex.railway.app:37919/railway",
+  ssl: {
+    rejectUnauthorized: false
+  }
 });
 
 pool.connect((err, client, release) => {
   if (err) {
     console.error("❌ Error al conectar a PostgreSQL:", err.stack);
   } else {
-    console.log("✅ Conectado a PostgreSQL");
+    console.log("✅ Conectado a PostgreSQL en Railway");
+    console.log("📡 Host:", client.host);
+    console.log("🗄️ Database:", client.database);
     release();
   }
 });
@@ -81,14 +86,13 @@ async function crearTablas() {
       )
     `);
 
+    // ✅ TABLA CORREGIDA - ahora usa monto_limite
     await pool.query(`
       CREATE TABLE IF NOT EXISTS presupuestos (
-        id_ahorro SERIAL PRIMARY KEY,
+        id_presupuesto SERIAL PRIMARY KEY,
         id_usuario INTEGER NOT NULL REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
         descripcion TEXT,
-        monto_objetivo DECIMAL(12, 2) NOT NULL CHECK (monto_objetivo > 0),
-        monto_actual DECIMAL(12, 2) DEFAULT 0,
-        bloqueado BOOLEAN DEFAULT FALSE,
+        monto_limite DECIMAL(12, 2) NOT NULL CHECK (monto_limite > 0),
         categoria VARCHAR(100) NOT NULL,
         periodo_inicio DATE NOT NULL,
         periodo_fin DATE NOT NULL,
@@ -116,7 +120,15 @@ async function crearTablas() {
 }
 
 crearTablas();
-// ====== FIN CÓDIGO AUTOMÁTICO ======
+
+// ====== RUTA DE PRUEBA ======
+app.get("/", (req, res) => {
+  res.json({ 
+    message: "🚀 OG Kash API funcionando correctamente",
+    status: "online",
+    database: "connected"
+  });
+});
 
 // --- USUARIOS ---
 app.post("/api/usuarios", async (req, res) => {
@@ -136,7 +148,11 @@ app.post("/api/usuarios", async (req, res) => {
     res.status(201).json(result.rows[0]);
   } catch (error) {
     console.error("❌ Error al registrar usuario:", error.message);
-    res.status(500).json({ error: "Error al registrar usuario", details: error.message });
+    if (error.code === '23505') { // Duplicate key error
+      res.status(400).json({ error: "El usuario ya existe" });
+    } else {
+      res.status(500).json({ error: "Error al registrar usuario", details: error.message });
+    }
   }
 });
 
@@ -282,7 +298,7 @@ app.get("/api/categorias/:tipo", async (req, res) => {
   }
 });
 
-// --- PRESUPUESTOS/METAS DE AHORRO ---
+// --- PRESUPUESTOS ---
 app.post("/api/presupuestos", async (req, res) => {
   console.log("💰 Intentando crear presupuesto:", req.body);
   const { id_usuario, categoria, monto_limite, periodo_inicio, periodo_fin } = req.body;
@@ -304,8 +320,8 @@ app.post("/api/presupuestos", async (req, res) => {
   
   try {
     const result = await pool.query(
-      "INSERT INTO presupuestos (id_usuario, descripcion, monto_objetivo, monto_actual, bloqueado, categoria, periodo_inicio, periodo_fin) VALUES ($1, $2, $3, $4, false, $5, $6, $7) RETURNING *",
-      [id_usuario, `Presupuesto ${categoria}`, parseFloat(monto_limite), 0, categoria, periodo_inicio, periodo_fin]
+      "INSERT INTO presupuestos (id_usuario, descripcion, monto_limite, categoria, periodo_inicio, periodo_fin) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+      [id_usuario, `Presupuesto ${categoria}`, parseFloat(monto_limite), categoria, periodo_inicio, periodo_fin]
     );
     console.log("✅ Presupuesto creado exitosamente:", result.rows[0]);
     res.json(result.rows[0]);
@@ -320,15 +336,23 @@ app.get("/api/presupuestos/:id_usuario", async (req, res) => {
   console.log("📥 Obteniendo presupuestos para usuario:", id_usuario);
   try {
     const result = await pool.query(
-      `SELECT p.*, 
-        COALESCE(SUM(g.monto), 0) as gastos_actuales
+      `SELECT 
+        p.id_presupuesto,
+        p.id_usuario,
+        p.descripcion,
+        p.monto_limite,
+        p.categoria,
+        p.periodo_inicio,
+        p.periodo_fin,
+        p.fecha_creacion,
+        COALESCE(SUM(g.monto), 0) as gastado
        FROM presupuestos p
        LEFT JOIN gastos g ON 
          g.id_usuario = p.id_usuario 
          AND g.categoria = p.categoria
          AND g.fecha_gasto BETWEEN p.periodo_inicio AND p.periodo_fin
        WHERE p.id_usuario = $1
-       GROUP BY p.id_ahorro
+       GROUP BY p.id_presupuesto
        ORDER BY p.periodo_inicio DESC`,
       [id_usuario]
     );
@@ -342,14 +366,14 @@ app.get("/api/presupuestos/:id_usuario", async (req, res) => {
 
 app.delete("/api/presupuestos/:id", async (req, res) => {
   const { id } = req.params;
-  console.log("🗑️ Eliminando meta de ahorro:", id);
+  console.log("🗑️ Eliminando presupuesto:", id);
   try {
-    await pool.query("DELETE FROM presupuestos WHERE id_ahorro = $1", [id]);
-    console.log("✅ Meta eliminada");
-    res.json({ message: "Meta de ahorro eliminada exitosamente" });
+    await pool.query("DELETE FROM presupuestos WHERE id_presupuesto = $1", [id]);
+    console.log("✅ Presupuesto eliminado");
+    res.json({ message: "Presupuesto eliminado exitosamente" });
   } catch (err) {
-    console.error("❌ Error al eliminar meta:", err.message);
-    res.status(500).json({ error: "Error al eliminar meta de ahorro" });
+    console.error("❌ Error al eliminar presupuesto:", err.message);
+    res.status(500).json({ error: "Error al eliminar presupuesto" });
   }
 });
 
@@ -383,8 +407,9 @@ app.get("/api/balance/:id_usuario", async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`✅ Servidor corriendo en http://localhost:${PORT}`);
+  console.log(`✅ Servidor corriendo en puerto ${PORT}`);
   console.log(`📡 Endpoints disponibles:`);
+  console.log(`   - GET  / (health check)`);
   console.log(`   - POST /api/usuarios`);
   console.log(`   - POST /api/login`);
   console.log(`   - POST /api/ingresos`);
@@ -392,5 +417,6 @@ app.listen(PORT, () => {
   console.log(`   - POST /api/gastos`);
   console.log(`   - GET  /api/gastos/:id_usuario`);
   console.log(`   - POST /api/presupuestos`);
+  console.log(`   - GET  /api/presupuestos/:id_usuario`);
   console.log(`   - GET  /api/balance/:id_usuario`);
 });

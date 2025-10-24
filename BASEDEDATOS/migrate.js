@@ -81,14 +81,13 @@ async function migrateDatabase() {
     console.log("✅ Tabla gastos creada");
 
     console.log("\n📋 Creando tabla presupuestos...");
+    // ✅ CORREGIDO: ahora usa monto_limite y id_presupuesto
     await client.query(`
       CREATE TABLE IF NOT EXISTS presupuestos (
-        id_ahorro SERIAL PRIMARY KEY,
+        id_presupuesto SERIAL PRIMARY KEY,
         id_usuario INTEGER NOT NULL REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
         descripcion TEXT,
-        monto_objetivo DECIMAL(12, 2) NOT NULL CHECK (monto_objetivo > 0),
-        monto_actual DECIMAL(12, 2) DEFAULT 0,
-        bloqueado BOOLEAN DEFAULT FALSE,
+        monto_limite DECIMAL(12, 2) NOT NULL CHECK (monto_limite > 0),
         categoria VARCHAR(100) NOT NULL,
         periodo_inicio DATE NOT NULL,
         periodo_fin DATE NOT NULL,
