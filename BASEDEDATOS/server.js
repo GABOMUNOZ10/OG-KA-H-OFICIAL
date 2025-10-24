@@ -18,7 +18,7 @@ app.use(cors({
 app.use(express.json());
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgresql://localhost/temp',
+  connectionString: process.env.DATABASE_URL || 'postgresql://postgres:ErMgAfoTewGrcfRebkisKqLWvIoIyniA@postgres-tgex.railway.internal:5432/railway',
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
@@ -30,7 +30,92 @@ pool.connect((err, client, release) => {
     release();
   }
 });
+// ====== CREAR TABLAS AUTOMÁTICAMENTE ======
+async function crearTablas() {
+  try {
+    console.log("🔧 Verificando/creando tablas...");
+    
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS usuarios (
+        id_usuario SERIAL PRIMARY KEY,
+        nombre VARCHAR(100) NOT NULL,
+        correo VARCHAR(150) UNIQUE NOT NULL,
+        contrasena VARCHAR(255) NOT NULL,
+        fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
 
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS categorias (
+        id_categoria SERIAL PRIMARY KEY,
+        nombre VARCHAR(100) NOT NULL,
+        tipo VARCHAR(20) NOT NULL CHECK (tipo IN ('ingreso', 'gasto')),
+        UNIQUE(nombre, tipo)
+      )
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS ingresos (
+        id_ingreso SERIAL PRIMARY KEY,
+        id_usuario INTEGER NOT NULL REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
+        monto DECIMAL(12, 2) NOT NULL CHECK (monto > 0),
+        descripcion TEXT NOT NULL,
+        fecha_ingreso DATE NOT NULL,
+        categoria VARCHAR(100),
+        metodo_pago VARCHAR(50),
+        fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS gastos (
+        id_gasto SERIAL PRIMARY KEY,
+        id_usuario INTEGER NOT NULL REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
+        monto DECIMAL(12, 2) NOT NULL CHECK (monto > 0),
+        descripcion TEXT NOT NULL,
+        fecha_gasto DATE NOT NULL,
+        categoria VARCHAR(100),
+        metodo_pago VARCHAR(50),
+        fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS presupuestos (
+        id_ahorro SERIAL PRIMARY KEY,
+        id_usuario INTEGER NOT NULL REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
+        descripcion TEXT,
+        monto_objetivo DECIMAL(12, 2) NOT NULL CHECK (monto_objetivo > 0),
+        monto_actual DECIMAL(12, 2) DEFAULT 0,
+        bloqueado BOOLEAN DEFAULT FALSE,
+        categoria VARCHAR(100) NOT NULL,
+        periodo_inicio DATE NOT NULL,
+        periodo_fin DATE NOT NULL,
+        fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        CHECK (periodo_fin > periodo_inicio)
+      )
+    `);
+
+    await pool.query(`
+      INSERT INTO categorias (nombre, tipo) VALUES
+        ('Salario', 'ingreso'), ('Freelance', 'ingreso'), ('Negocio', 'ingreso'),
+        ('Inversiones', 'ingreso'), ('Ventas', 'ingreso'), ('Bonos', 'ingreso'),
+        ('Regalos', 'ingreso'), ('Alquiler', 'ingreso'), ('Otros Ingresos', 'ingreso'),
+        ('Alimentación', 'gasto'), ('Transporte', 'gasto'), ('Vivienda', 'gasto'),
+        ('Servicios', 'gasto'), ('Salud', 'gasto'), ('Educación', 'gasto'),
+        ('Entretenimiento', 'gasto'), ('Ropa', 'gasto'), ('Tecnología', 'gasto'),
+        ('Restaurantes', 'gasto'), ('Otros Gastos', 'gasto')
+      ON CONFLICT (nombre, tipo) DO NOTHING
+    `);
+
+    console.log("✅✅✅ Tablas creadas/verificadas exitosamente ✅✅✅");
+  } catch (err) {
+    console.log("⚠️ Error al crear tablas:", err.message);
+  }
+}
+
+crearTablas();
+// ====== FIN CÓDIGO AUTOMÁTICO ======
 // --- USUARIOS ---
 app.post("/api/usuarios", async (req, res) => {
   try {
@@ -200,15 +285,9 @@ app.post("/api/presupuestos", async (req, res) => {
   console.log("💰 Intentando crear presupuesto:", req.body);
   const { id_usuario, categoria, monto_limite, periodo_inicio, periodo_fin } = req.body;
   
-  console.log("Valores recibidos - id_usuario:", id_usuario, "| categoria:", categoria, "| monto_limite:", monto_limite, "| periodo_inicio:", periodo_inicio, "| periodo_fin:", periodo_fin);
-  
-  if (id_usuario === undefined || id_usuario === null || 
-      categoria === undefined || categoria === null || 
-      monto_limite === undefined || monto_limite === null ||
-      periodo_inicio === undefined || periodo_inicio === null ||
-      periodo_fin === undefined || periodo_fin === null) {
-    console.error("❌ Datos incompletos - Falta algún campo requerido");
-    return res.status(400).json({ error: "Todos los campos son obligatorios (id_usuario, categoria, monto_limite, periodo_inicio, periodo_fin)" });
+  if (id_usuario === undefined || categoria === undefined || monto_limite === undefined ||
+      periodo_inicio === undefined || periodo_fin === undefined) {
+    return res.status(400).json({ error: "Todos los campos son obligatorios" });
   }
   
   if (parseFloat(monto_limite) <= 0) {
@@ -222,8 +301,6 @@ app.post("/api/presupuestos", async (req, res) => {
   }
   
   try {
-    console.log("✅ Validación pasada. Insertando en DB...");
-    
     const result = await pool.query(
       "INSERT INTO presupuestos (id_usuario, descripcion, monto_objetivo, monto_actual, bloqueado, categoria, periodo_inicio, periodo_fin) VALUES ($1, $2, $3, $4, false, $5, $6, $7) RETURNING *",
       [id_usuario, `Presupuesto ${categoria}`, parseFloat(monto_limite), 0, categoria, periodo_inicio, periodo_fin]
@@ -232,7 +309,6 @@ app.post("/api/presupuestos", async (req, res) => {
     res.json(result.rows[0]);
   } catch (err) {
     console.error("❌ Error al crear presupuesto:", err.message);
-    console.error("Stack:", err.stack);
     res.status(500).json({ error: "Error al crear presupuesto", details: err.message });
   }
 });
@@ -255,21 +331,9 @@ app.get("/api/presupuestos/:id_usuario", async (req, res) => {
       [id_usuario]
     );
     console.log(`✅ ${result.rows.length} presupuestos encontrados`);
-    
-    result.rows.forEach(p => {
-      console.log(`  Presupuesto ${p.id_ahorro}:`, {
-        categoria: p.categoria,
-        monto_objetivo: p.monto_objetivo,
-        gastos_actuales: p.gastos_actuales,
-        periodo_inicio: p.periodo_inicio,
-        periodo_fin: p.periodo_fin
-      });
-    });
-    
     res.json(result.rows);
   } catch (err) {
     console.error("❌ Error al obtener presupuestos:", err.message);
-    console.error("Detalles del error:", err);
     res.status(500).json({ error: "Error al obtener presupuestos", details: err.message });
   }
 });
