@@ -1,4 +1,5 @@
-const API_URL = 'https://TU-DOMINIO-REAL.up.railway.app';
+const API_URL = "https://og-kash-production.up.railway.app";
+
 // === REFERENCIAS DEL DOM ===
 const screens = {
   auth: document.getElementById('auth-screen'),
