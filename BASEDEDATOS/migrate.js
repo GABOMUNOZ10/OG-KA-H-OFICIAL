@@ -1,16 +1,12 @@
 import pkg from "pg";
-import dotenv from "dotenv";
-
-dotenv.config();
-
 const { Pool } = pkg;
 
-// USAR EL HOST PÚBLICO DE RAILWAY
+// ✅ CONFIGURACIÓN CON NUEVA BASE DE DATOS RAILWAY
 const pool = new Pool({
   user: "postgres",
-  host: "postgres-tgex.railway.app",
+  host: "shortline.proxy.rlwy.net",
   database: "railway",
-  password: "ErMgAfoTewGrcfRebkisKqLWvIoIyniA",
+  password: "IzMUNFdpnLHUsFtKfXhqIKzWPQSIdbqM",
   port: 37919,
   ssl: {
     rejectUnauthorized: false
@@ -18,15 +14,16 @@ const pool = new Pool({
 });
 
 async function migrateDatabase() {
-  console.log("🚀 Iniciando migración de base de datos...");
-  console.log("📡 Conectando a: postgres-tgex.railway.app:37919");
+  console.log("🚀 Iniciando migración a Railway...");
+  console.log("📡 Conectando a: caboose.proxy.rlwy.net:39637");
   
   let client;
   
   try {
     client = await pool.connect();
-    console.log("✅ Conectado a PostgreSQL en Railway");
+    console.log("✅ Conectado a Railway");
 
+    // 1. CREAR TABLA USUARIOS
     console.log("\n📋 Creando tabla usuarios...");
     await client.query(`
       CREATE TABLE IF NOT EXISTS usuarios (
@@ -39,6 +36,7 @@ async function migrateDatabase() {
     `);
     console.log("✅ Tabla usuarios creada");
 
+    // 2. CREAR TABLA CATEGORIAS
     console.log("\n📋 Creando tabla categorias...");
     await client.query(`
       CREATE TABLE IF NOT EXISTS categorias (
@@ -50,6 +48,7 @@ async function migrateDatabase() {
     `);
     console.log("✅ Tabla categorias creada");
 
+    // 3. CREAR TABLA INGRESOS
     console.log("\n📋 Creando tabla ingresos...");
     await client.query(`
       CREATE TABLE IF NOT EXISTS ingresos (
@@ -65,6 +64,7 @@ async function migrateDatabase() {
     `);
     console.log("✅ Tabla ingresos creada");
 
+    // 4. CREAR TABLA GASTOS
     console.log("\n📋 Creando tabla gastos...");
     await client.query(`
       CREATE TABLE IF NOT EXISTS gastos (
@@ -80,23 +80,24 @@ async function migrateDatabase() {
     `);
     console.log("✅ Tabla gastos creada");
 
+    // 5. CREAR TABLA PRESUPUESTOS
     console.log("\n📋 Creando tabla presupuestos...");
-    // ✅ CORREGIDO: ahora usa monto_limite y id_presupuesto
     await client.query(`
       CREATE TABLE IF NOT EXISTS presupuestos (
         id_presupuesto SERIAL PRIMARY KEY,
         id_usuario INTEGER NOT NULL REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
-        descripcion TEXT,
-        monto_limite DECIMAL(12, 2) NOT NULL CHECK (monto_limite > 0),
         categoria VARCHAR(100) NOT NULL,
+        monto_limite DECIMAL(12, 2) NOT NULL CHECK (monto_limite > 0),
         periodo_inicio DATE NOT NULL,
         periodo_fin DATE NOT NULL,
+        notificado BOOLEAN DEFAULT FALSE,
         fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         CHECK (periodo_fin > periodo_inicio)
       )
     `);
     console.log("✅ Tabla presupuestos creada");
 
+    // 6. INSERTAR CATEGORÍAS DE INGRESOS
     console.log("\n📋 Insertando categorías de ingresos...");
     await client.query(`
       INSERT INTO categorias (nombre, tipo) VALUES
@@ -114,6 +115,7 @@ async function migrateDatabase() {
     `);
     console.log("✅ Categorías de ingresos insertadas");
 
+    // 7. INSERTAR CATEGORÍAS DE GASTOS
     console.log("\n📋 Insertando categorías de gastos...");
     await client.query(`
       INSERT INTO categorias (nombre, tipo) VALUES
@@ -138,6 +140,7 @@ async function migrateDatabase() {
     `);
     console.log("✅ Categorías de gastos insertadas");
 
+    // 8. CREAR ÍNDICES
     console.log("\n📋 Creando índices...");
     await client.query(`
       CREATE INDEX IF NOT EXISTS idx_ingresos_usuario ON ingresos(id_usuario);
@@ -148,6 +151,7 @@ async function migrateDatabase() {
     `);
     console.log("✅ Índices creados");
 
+    // 9. VERIFICAR TABLAS
     console.log("\n📊 Verificando tablas creadas...");
     const result = await client.query(`
       SELECT table_name 
@@ -161,6 +165,7 @@ async function migrateDatabase() {
       console.log("   -", row.table_name);
     });
 
+    // 10. CONTAR CATEGORÍAS
     const catCount = await client.query(`
       SELECT tipo, COUNT(*) as cantidad
       FROM categorias
@@ -174,6 +179,7 @@ async function migrateDatabase() {
     });
 
     console.log("\n🎉 ¡Migración completada exitosamente!");
+    console.log("\n📝 Siguiente paso: Inicia tu servidor con 'node server.js'");
     
   } catch (error) {
     console.error("\n❌ Error durante la migración:");
