@@ -1,0 +1,765 @@
+/* Variables de color - ACTUALIZADAS */
+:root {
+    --primary-color: #133d37;  /* ✅ Verde oscuro principal */
+    --secondary-color: #1a574f; /* ✅ Verde oscuro secundario (más claro) */
+    --background-color: #ffffff;
+    --text-color: #333333;
+    --light-gray: #f4f4f4;
+    --expense-color: #e53935;
+    --income-color: #43a047;
+    --accent-green: #2e7d32; /* Verde para acentos */
+}
+
+/* Base y Reset */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 0;
+    margin: 0;
+}
+
+/* Contenedor de la aplicación */
+.screen {
+    width: 100%;
+    max-width: 400px;
+    background: var(--background-color);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    min-height: 100vh;
+    padding: 20px;
+    display: block;
+    position: relative;
+}
+
+/* ✅ CRÍTICO: Ocultar pantallas con .hidden */
+.screen.hidden {
+    display: none !important;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* --- Estilos de Autenticación --- */
+#auth-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+}
+
+.logo-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    margin-bottom: 10px;
+}
+
+.logo-ogkash {
+    width: 230px;
+    height: auto;
+    margin-bottom: 0px;
+}
+
+h2 {
+    text-align: center;
+    margin-top: 0px;
+}
+
+.auth-form {
+    width: 100%;
+    max-width: 300px;
+}
+
+.auth-form h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: var(--primary-color);
+}
+
+.auth-form label {
+    display: block;
+    margin-top: 10px;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: var(--text-color);
+}
+
+/* ✅ Inputs con el color #133d37 */
+.auth-form input {
+    width: 100%;
+    padding: 15px 20px;
+    margin-bottom: 15px;
+    border: none;
+    border-radius: 50px;
+    background-color: var(--primary-color); /* #133d37 */
+    color: white;
+    font-size: 16px;
+    outline: none;
+}
+
+.auth-form input::placeholder {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.forgot-password {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 14px;
+    color: var(--text-color);
+    cursor: pointer;
+}
+
+.forgot-password:hover {
+    color: var(--primary-color);
+}
+
+/* Botones genéricos */
+.btn {
+    width: 100%;
+    padding: 15px 20px;
+    border: none;
+    border-radius: 50px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-bottom: 10px;
+    transition: all 0.3s;
+    font-weight: 600;
+}
+
+/* ✅ Botón Login/Primary con #133d37 */
+.btn.primary {
+    background-color: var(--primary-color); /* #133d37 */
+    color: white;
+}
+
+.btn.primary:hover {
+    background-color: var(--secondary-color); /* Un poco más claro al hover */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(19, 61, 55, 0.3);
+}
+
+.btn.secondary {
+    background-color: white;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
+}
+
+.btn.secondary:hover {
+    background-color: var(--light-gray);
+}
+
+.btn.tertiary {
+    background-color: #f0f0f0;
+    color: var(--text-color);
+    border: 1px solid #ccc;
+    margin-top: 20px;
+}
+
+.btn.tertiary:hover {
+    background-color: #e0e0e0;
+}
+
+/* --- Dashboard --- */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.header-title {
+    color: var(--primary-color);
+}
+
+/* Gráfico en Dashboard */
+.dashboard-chart {
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.dashboard-chart h3 {
+    color: var(--primary-color);
+    text-align: center;
+    margin-bottom: 15px;
+    font-size: 18px;
+}
+
+.dashboard-chart canvas {
+    max-height: 220px;
+    margin: 0 auto;
+    display: block;
+}
+
+.chart-legend {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-top: 15px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #666;
+}
+
+.legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.legend-color.expenses {
+    background: #e53935;
+}
+
+.legend-color.income {
+    background: #43a047;
+}
+
+/* ✅ Balance con gradiente usando #133d37 */
+.balance-summary {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    border-radius: 15px;
+    margin-bottom: 20px;
+    color: white;
+    padding: 0;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(19, 61, 55, 0.3);
+}
+
+.balance-card {
+    text-align: center;
+    padding: 20px;
+}
+
+.balance-card h3 {
+    color: white;
+    margin-bottom: 10px;
+    font-size: 16px;
+    opacity: 0.9;
+}
+
+.balance-amount {
+    font-size: 2.5em;
+    font-weight: bold;
+    color: white;
+    margin: 10px 0;
+}
+
+.balance-details-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    background: rgba(255, 255, 255, 0.1);
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.detail-card {
+    padding: 15px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.detail-card:first-child {
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.detail-label {
+    font-size: 14px;
+    opacity: 0.9;
+    color: white;
+}
+
+.detail-card strong {
+    font-size: 18px;
+    color: white;
+    font-weight: bold;
+}
+
+/* Acciones rápidas */
+.quick-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.action-btn {
+    padding: 15px 12px;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.income-btn {
+    background-color: var(--income-color);
+    color: white;
+}
+
+.expense-btn {
+    background-color: var(--expense-color);
+    color: white;
+}
+
+.budget-btn {
+    background-color: #ff9800;
+    color: white;
+}
+
+.report-btn {
+    background-color: #2196F3;
+    color: white;
+}
+
+/* Transacciones */
+.transaction-list-summary {
+    margin-bottom: 20px;
+}
+
+.transaction-list-summary h3 {
+    color: var(--primary-color);
+    margin-bottom: 15px;
+}
+
+#transaction-list {
+    list-style: none;
+    padding: 0;
+}
+
+#transaction-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: #f9f9f9;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    border-left: 4px solid var(--primary-color);
+}
+
+#transaction-list small {
+    display: block;
+    color: #666;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+.transaction-expense {
+    color: var(--expense-color);
+    font-weight: bold;
+}
+
+.transaction-income {
+    color: var(--income-color);
+    font-weight: bold;
+}
+
+/* Formularios */
+form label {
+    display: block;
+    margin-top: 15px;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+form input,
+form select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+form input:focus,
+form select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(19, 61, 55, 0.1);
+}
+
+form button {
+    margin-top: 20px;
+}
+
+.back-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    margin-right: 10px;
+    color: var(--primary-color);
+    transition: transform 0.2s;
+}
+
+.back-btn:hover {
+    transform: translateX(-3px);
+}
+
+/* Listas de transacciones */
+.transaction-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: #f9f9f9;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    border-left: 4px solid var(--primary-color);
+    transition: background 0.2s;
+}
+
+.transaction-item:hover {
+    background: #f0f0f0;
+}
+
+.transaction-item small {
+    color: #666;
+    font-size: 12px;
+    display: block;
+    margin-top: 4px;
+}
+
+.transaction-item > div:last-child {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.delete-btn {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 5px;
+    transition: transform 0.2s;
+    opacity: 0.6;
+}
+
+.delete-btn:hover {
+    transform: scale(1.2);
+    opacity: 1;
+}
+
+.income-list, .expense-list {
+    margin-top: 30px;
+}
+
+.income-list h3, .expense-list h3 {
+    color: var(--primary-color);
+    margin-bottom: 15px;
+}
+
+.income-list ul, .expense-list ul {
+    list-style: none;
+    padding: 0;
+}
+
+/* Presupuestos */
+.budget-list {
+    margin-top: 20px;
+}
+
+.budget-card {
+    background: white;
+    border: 2px solid var(--light-gray);
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s;
+}
+
+.budget-card:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.budget-card.budget-exceeded {
+    border-color: var(--expense-color);
+    background: #fff5f5;
+}
+
+.budget-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.budget-header h4 {
+    color: var(--primary-color);
+    margin: 0;
+}
+
+.budget-info p {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+.budget-bar {
+    width: 100%;
+    height: 20px;
+    background: var(--light-gray);
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 10px 0;
+}
+
+.budget-progress {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    transition: width 0.3s;
+}
+
+.budget-exceeded .budget-progress {
+    background: linear-gradient(90deg, #ff6b6b, var(--expense-color));
+}
+
+.budget-percentage {
+    text-align: center;
+    font-weight: bold;
+    color: var(--primary-color);
+    margin: 5px 0;
+}
+
+.budget-period {
+    text-align: center;
+    font-size: 12px;
+    color: #666;
+}
+
+.budget-alert {
+    background: var(--expense-color);
+    color: white;
+    padding: 8px;
+    border-radius: 5px;
+    text-align: center;
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+/* Reportes */
+#reports-screen {
+    background: white;
+    padding: 30px 20px;
+}
+
+#reports-screen header {
+    display: none;
+}
+
+.report-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-bottom: 30px;
+    background: white;
+    padding: 0;
+}
+
+.report-card {
+    background: transparent;
+    padding: 15px 0;
+    border-radius: 0;
+    text-align: left;
+    box-shadow: none;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.report-card:last-child {
+    border-bottom: none;
+}
+
+.report-card h3 {
+    font-size: 16px;
+    color: var(--primary-color);
+    margin: 0;
+    font-weight: 600;
+}
+
+.report-amount {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+    color: #333;
+}
+
+.balance-card {
+    order: -1;
+    padding-bottom: 25px;
+}
+
+.balance-card .report-amount {
+    color: var(--primary-color);
+    font-size: 22px;
+}
+
+.report-title {
+    text-align: center;
+    color: var(--primary-color);
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 30px;
+}
+
+.report-chart {
+    background: transparent;
+    padding: 20px 0;
+    border-radius: 0;
+    margin-bottom: 30px;
+    box-shadow: none;
+}
+
+.report-chart h3 {
+    display: none;
+}
+
+.report-chart canvas {
+    max-height: 250px;
+    margin: 0 auto;
+    display: block;
+}
+
+.report-chart-legend {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-top: 20px;
+}
+
+/* ✅ NUEVA SECCIÓN: Filtros de transacciones en reportes */
+.report-transactions {
+    margin-top: 30px;
+}
+
+.report-filters {
+    margin-bottom: 20px;
+}
+
+.report-filters h3 {
+    color: var(--primary-color);
+    margin-bottom: 10px;
+}
+
+.filter-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.filter-btn {
+    flex: 1;
+    padding: 10px 16px;
+    border: 2px solid var(--primary-color);
+    background: white;
+    color: var(--primary-color);
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.filter-btn:hover {
+    background: rgba(19, 61, 55, 0.1);
+}
+
+.filter-btn.active {
+    background: var(--primary-color);
+    color: white;
+}
+
+#report-transaction-list {
+    list-style: none;
+    padding: 0;
+}
+
+#report-transaction-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: #f9f9f9;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    border-left: 4px solid var(--primary-color);
+}
+
+#report-transaction-list li:hover {
+    background: #f0f0f0;
+}
+
+#report-transaction-list small {
+    display: block;
+    color: #666;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+/* ✅ Botón Add Income con #133d37 */
+.report-add-btn {
+    width: 100%;
+    max-width: 300px;
+    margin: 20px auto;
+    display: block;
+    padding: 15px;
+    background: var(--primary-color); /* #133d37 */
+    color: white;
+    border: none;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(19, 61, 55, 0.3);
+    transition: all 0.3s;
+}
+
+.report-add-btn:hover {
+    background: var(--secondary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(19, 61, 55, 0.4);
+}
+
+/* Media Query */
+@media (min-width: 600px) {
+    .screen {
+        min-height: 80vh;
+        border-radius: 10px;
+        margin-top: 20px;
+    }
+    
+    .quick-actions {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OG Kash - Finanzas Personales</title>
+    <link rel="stylesheet" href="main.css">
+    
+    <!-- ✅ CSS crítico inline para evitar problemas de carga -->
+    <style>
+        .hidden {
+            display: none !important;
+        }
+        
+        /* Asegurar que solo una pantalla sea visible a la vez */
+        .screen {
+            display: block;
+        }
+        
+        .screen.hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- PANTALLA DE AUTENTICACIÓN -->
+    <div id="auth-screen" class="screen">
+       <div class="logo-container">
+          <img src="./assets/logo_OG.png" alt="OG Kash Logo" class="logo-ogkash">
+       </div>
+
+        <form id="login-form" class="auth-form">
+            <h2>Iniciar Sesión</h2>
+            <label for="login-user">Usuario</label>
+            <input type="text" id="login-user" name="username" placeholder="Usuario:" autocomplete="username" required>
+            <label for="login-password">Contraseña</label>
+            <input type="password" id="login-password" name="password" placeholder="Contraseña:" autocomplete="current-password" required>
+            <p class="forgot-password">¿Olvidaste la Contraseña?</p>
+            <button type="submit" class="btn primary">Login</button>
+            <button type="button" class="btn secondary" id="show-signup">Sign up</button>
+        </form>
+
+        <form id="signup-form" class="auth-form hidden">
+            <h2>Registrarse</h2>
+            <label for="signup-user">Usuario</label>
+            <input type="text" id="signup-user" name="new-username" placeholder="Usuario:" autocomplete="username" required>
+            <label for="signup-password">Contraseña</label>
+            <input type="password" id="signup-password" name="new-password" placeholder="Contraseña:" autocomplete="new-password" required>
+            <button type="submit" class="btn primary">Sign up</button>
+            <button type="button" class="btn secondary" id="show-login">Volver a Login</button>
+        </form>
+    </div>
+
+    <!-- PANTALLA DE DASHBOARD -->
+    <div id="dashboard-screen" class="screen hidden">
+        <header>
+            <h1 class="header-title">Dashboard</h1>
+            <p>Hola, <span id="current-user">Usuario</span></p>
+        </header>
+
+        <!-- Balance Summary -->
+        <section class="balance-summary">
+            <div class="balance-card">
+                <h3>Balance Total</h3>
+                <p id="current-balance" class="balance-amount">$0.00</p>
+            </div>
+            <div class="balance-details-cards">
+                <div class="detail-card">
+                    <span class="detail-label">Ingresos:</span>
+                    <strong id="total-ingresos">$0.00</strong>
+                </div>
+                <div class="detail-card">
+                    <span class="detail-label">Gastos:</span>
+                    <strong id="total-gastos">$0.00</strong>
+                </div>
+            </div>
+        </section>
+
+        <section class="quick-actions">
+            <button class="action-btn income-btn" id="quick-add-income">+ Ingreso</button>
+            <button class="action-btn expense-btn" id="quick-add-expense">- Gasto</button>
+            <button class="action-btn budget-btn" id="manage-budgets">💰 Presupuestos</button>
+            <button class="action-btn report-btn" id="view-reports">📊 Reportes</button>
+        </section>
+
+        <section class="transaction-list-summary">
+            <h3>Últimas Transacciones</h3>
+            <ul id="transaction-list">
+                <li>No hay transacciones aún.</li>
+            </ul>
+        </section>
+        
+        <button id="logout-btn" class="btn tertiary">Cerrar Sesión</button>
+    </div>
+
+    <!-- PANTALLA DE INGRESOS -->
+    <div id="income-screen" class="screen hidden">
+        <header>
+            <button id="back-from-income" class="back-btn">←</button>
+            <h1 class="header-title">Nuevo Ingreso</h1>
+        </header>
+
+        <form id="income-form">
+            <label for="income-amount">Monto ($):</label>
+            <input type="number" id="income-amount" step="0.01" min="0.01" required>
+
+            <label for="income-category">Categoría:</label>
+            <select id="income-category" required>
+                <option value="">Selecciona una categoría</option>
+            </select>
+
+            <label for="income-description">Descripción:</label>
+            <input type="text" id="income-description" required>
+
+            <label for="income-date">Fecha:</label>
+            <input type="date" id="income-date" required>
+
+            <label for="income-method">Método de Pago:</label>
+            <select id="income-method" required>
+                <option value="Efectivo">Efectivo</option>
+                <option value="Transferencia">Transferencia</option>
+                <option value="Tarjeta">Tarjeta</option>
+                <option value="Cheque">Cheque</option>
+            </select>
+
+            <button type="submit" class="btn primary">Guardar Ingreso</button>
+        </form>
+
+        <section class="income-list">
+            <h3>Mis Ingresos</h3>
+            <ul id="income-list-items"></ul>
+        </section>
+    </div>
+
+    <!-- PANTALLA DE GASTOS -->
+    <div id="expense-screen" class="screen hidden">
+        <header>
+            <button id="back-from-expense" class="back-btn">←</button>
+            <h1 class="header-title">Nuevo Gasto</h1>
+        </header>
+
+        <form id="expense-form">
+            <label for="expense-amount">Monto ($):</label>
+            <input type="number" id="expense-amount" step="0.01" min="0.01" required>
+
+            <label for="expense-category">Categoría:</label>
+            <select id="expense-category" required>
+                <option value="">Selecciona una categoría</option>
+            </select>
+
+            <label for="expense-description">Descripción:</label>
+            <input type="text" id="expense-description" required>
+
+            <label for="expense-date">Fecha:</label>
+            <input type="date" id="expense-date" required>
+
+            <label for="expense-method">Método de Pago:</label>
+            <select id="expense-method" required>
+                <option value="Efectivo">Efectivo</option>
+                <option value="Transferencia">Transferencia</option>
+                <option value="Tarjeta">Tarjeta</option>
+                <option value="Débito">Débito</option>
+            </select>
+
+            <button type="submit" class="btn primary">Guardar Gasto</button>
+        </form>
+
+        <section class="expense-list">
+            <h3>Mis Gastos</h3>
+            <ul id="expense-list-items"></ul>
+        </section>
+    </div>
+
+    <!-- PANTALLA DE PRESUPUESTOS -->
+    <div id="budget-screen" class="screen hidden">
+        <header>
+            <button id="back-from-budget" class="back-btn">←</button>
+            <h1 class="header-title">Presupuestos</h1>
+        </header>
+
+        <button id="show-budget-form" class="btn secondary">+ Crear Presupuesto</button>
+
+        <form id="budget-form" class="hidden">
+            <h3>Nuevo Presupuesto</h3>
+            
+            <label for="budget-category">Categoría:</label>
+            <select id="budget-category" required>
+                <option value="">Selecciona una categoría</option>
+            </select>
+
+            <label for="budget-amount">Monto Límite ($):</label>
+            <input type="number" id="budget-amount" step="0.01" min="0.01" required>
+
+            <label for="budget-start">Fecha Inicio:</label>
+            <input type="date" id="budget-start" required>
+
+            <label for="budget-end">Fecha Fin:</label>
+            <input type="date" id="budget-end" required>
+
+            <button type="submit" class="btn primary">Guardar Presupuesto</button>
+            <button type="button" id="cancel-budget" class="btn secondary">Cancelar</button>
+        </form>
+
+        <section class="budget-list">
+            <h3>Mis Presupuestos</h3>
+            <div id="budget-list-items"></div>
+        </section>
+    </div>
+
+    <!-- PANTALLA DE REPORTES -->
+    <div id="reports-screen" class="screen hidden">
+        <div class="logo-container">
+            <img src="./assets/logo_OG.png" alt="OG Kash Logo" class="logo-ogkash" style="width: 80px;">
+        </div>
+
+        <h2 class="report-title">Balance Overview</h2>
+
+        <!-- Gráfico -->
+        <section class="report-chart">
+            <canvas id="financeChart"></canvas>
+            <div class="report-chart-legend">
+                <div class="legend-item">
+                    <div class="legend-color expenses"></div>
+                    <span>Gastos</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color income"></div>
+                    <span>Ingresos</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Botón de agregar ingreso -->
+        <button class="report-add-btn" id="report-add-income">Add Income</button>
+
+        <!-- Resumen numérico -->
+        <section class="report-summary">
+            <div class="report-card balance-card">
+                <h3>Total Balance:</h3>
+                <p class="report-amount" id="report-balance">$0.00</p>
+            </div>
+            <div class="report-card income-card">
+                <h3>Total Income</h3>
+                <p class="report-amount" id="report-ingresos">$0.00</p>
+            </div>
+            <div class="report-card expense-card">
+                <h3>Total Expenses</h3>
+                <p class="report-amount" id="report-gastos">$0.00</p>
+            </div>
+        </section>
+
+        <!-- ✅ NUEVA SECCIÓN: Filtros y lista de transacciones -->
+        <section class="report-transactions">
+            <div class="report-filters">
+                <h3>Transacciones <span id="filter-label">(Todas)</span></h3>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-filter="all">Todas</button>
+                    <button class="filter-btn" data-filter="income">Ingresos</button>
+                    <button class="filter-btn" data-filter="expense">Gastos</button>
+                </div>
+            </div>
+            <ul id="report-transaction-list" class="transaction-list">
+                <li>No hay transacciones para mostrar.</li>
+            </ul>
+        </section>
+
+        <!-- Botón de volver -->
+        <button id="back-from-reports" class="btn tertiary" style="margin-top: 30px;">Volver al Dashboard</button>
+    </div>
+
+    <!-- ✅ Scripts al final del body - ORDEN CORRECTO -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="script.js"></script>
+
+</body>
+</html>

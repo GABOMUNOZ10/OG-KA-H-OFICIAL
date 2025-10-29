@@ -1,0 +1,25 @@
+﻿# Node modules
+node_modules/
+BACKEND/node_modules/
+BASEDEDATOS/node_modules/
+
+# Variables de entorno
+.env
+*.env.local
+*.env.production
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# IDE
+.vscode/
+.idea/
+
+# Archivos temporales
+*.tmp
+*.temp
