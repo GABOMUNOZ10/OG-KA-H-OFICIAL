@@ -1,10 +1,8 @@
 // ✅ DETECCIÓN AUTOMÁTICA DEL ENTORNO
 // En script.js, línea 1-3
 const API_URL = window.location.hostname.includes('github.io')
-  ? 'https://og-ka-h-oficial-production.up.railway.app'  // ← Tu URL de Railway
-  : window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-  ? 'http://localhost:5500'
-  : 'https://og-ka-h-oficial-production.up.railway.app';
+  ? 'https://tu-proyecto.up.railway.app'  // ← URL de Railway aquí
+  : 'http://localhost:5500';
 console.log("🌐 Entorno detectado:", window.location.hostname);
 console.log("🔗 API URL configurada:", API_URL);
 
