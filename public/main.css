@@ -184,6 +184,45 @@ header {
     color: var(--primary-color);
 }
 
+.balance-summary {
+    text-align: center;
+    padding: 20px;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    border-radius: 15px;
+    margin-bottom: 20px;
+    color: white;
+}
+
+.balance-summary h3 {
+    color: white;
+    margin-bottom: 10px;
+    font-size: 16px;
+    opacity: 0.9;
+}
+
+.balance-amount {
+    font-size: 2.5em;
+    font-weight: bold;
+    color: white;
+    margin: 10px 0;
+}
+
+.balance-details {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 15px;
+    font-size: 14px;
+}
+
+.balance-details span {
+    color: white;
+}
+
+.balance-details strong {
+    color: white;
+    font-weight: bold;
+}
+
 /* Gráfico en Dashboard */
 .dashboard-chart {
     background: white;
@@ -296,46 +335,42 @@ header {
     font-weight: bold;
 }
 
-/* Acciones rápidas */
+/* ✅ Acciones rápidas - ACTUALIZADO */
 .quick-actions {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
     margin-bottom: 20px;
 }
 
 .action-btn {
-    padding: 15px 12px;
+    padding: 12px 8px;
     border: none;
     border-radius: 10px;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s;
+    background-color: var(--primary-color);
+    color: white;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .action-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 8px rgba(19, 61, 55, 0.3);
+    background-color: var(--secondary-color);
 }
 
-.income-btn {
-    background-color: var(--income-color);
-    color: white;
-}
-
-.expense-btn {
-    background-color: var(--expense-color);
-    color: white;
-}
-
-.budget-btn {
-    background-color: #ff9800;
-    color: white;
-}
-
+/* Estilos específicos para mantener compatibilidad */
+.income-btn,
+.expense-btn,
+.budget-btn,
+.descriptions-btn,
 .report-btn {
-    background-color: #2196F3;
+    background-color: var(--primary-color);
     color: white;
 }
 
@@ -760,6 +795,97 @@ form button {
     }
     
     .quick-actions {
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(3, 1fr);
     }
+}
+
+/* === DESCRIPCIONES === */
+.tabs-container {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 12px;
+    border: 2px solid var(--primary-color);
+    background: white;
+    color: var(--primary-color);
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.tab-btn:hover {
+    background: rgba(19, 61, 55, 0.1);
+}
+
+.tab-btn.active {
+    background: var(--primary-color);
+    color: white;
+}
+
+.form-container {
+    margin-bottom: 20px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.form-actions .btn {
+    flex: 1;
+}
+
+.descriptions-list {
+    margin-top: 20px;
+}
+
+.descriptions-list h3 {
+    color: var(--primary-color);
+    margin-bottom: 15px;
+}
+
+#search-descriptions {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+#search-descriptions:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(19, 61, 55, 0.1);
+}
+
+#descriptions-list-items {
+    list-style: none;
+    padding: 0;
+}
+
+#descriptions-list-items li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: #f9f9f9;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    border-left: 4px solid var(--primary-color);
+}
+
+#descriptions-list-items li:hover {
+    background: #f0f0f0;
+}
+
+#descriptions-list-items .no-data {
+    text-align: center;
+    color: #666;
+    font-style: italic;
 }

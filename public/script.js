@@ -781,6 +781,148 @@ if (reportAddIncomeBtn) {
   });
 }
 
+// === DESCRIPCIONES ===
+// Agregar la pantalla al objeto screens
+screens.descriptions = document.getElementById('descriptions-screen');
+
+// Evento para el botón "Descripciones" en el dashboard
+document.getElementById("manage-descriptions")?.addEventListener('click', () => {
+  console.log("📝 Ir a descripciones");
+  loadDescriptions();
+  navigateTo(screens.descriptions);
+});
+
+// Botón de volver desde descripciones
+document.getElementById('back-from-descriptions')?.addEventListener('click', () => {
+  navigateTo(screens.dashboard);
+});
+
+// Mostrar formulario de nueva descripción
+document.getElementById('show-description-form')?.addEventListener('click', () => {
+  const formContainer = document.getElementById('description-form-container');
+  if (formContainer) {
+    formContainer.classList.remove('hidden');
+    document.getElementById('description-text')?.focus();
+  }
+});
+
+// Cancelar formulario
+document.getElementById('cancel-description')?.addEventListener('click', () => {
+  const formContainer = document.getElementById('description-form-container');
+  const form = document.getElementById('description-form');
+  if (formContainer && form) {
+    formContainer.classList.add('hidden');
+    form.reset();
+  }
+});
+
+// Tabs de gastos/ingresos
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const type = btn.getAttribute('data-type');
+    document.getElementById('description-type').value = type;
+    
+    // Cargar categorías según el tipo
+    loadCategories(type, 'description-category');
+  });
+});
+
+// Enviar formulario de descripción
+document.getElementById('description-form')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  const descripcion = {
+    id_usuario: userId,
+    tipo: document.getElementById('description-type')?.value,
+    texto: document.getElementById('description-text')?.value.trim(),
+    categoria: document.getElementById('description-category')?.value || null
+  };
+
+  try {
+    await fetchAPI('/api/descripciones', {
+      method: "POST",
+      body: JSON.stringify(descripcion)
+    });
+
+    alert("✅ Descripción guardada exitosamente");
+    const form = document.getElementById('description-form');
+    const formContainer = document.getElementById('description-form-container');
+    
+    if (form && formContainer) {
+      form.reset();
+      formContainer.classList.add('hidden');
+    }
+    
+    await loadDescriptions();
+  } catch (error) {
+    console.error("❌ Error al guardar descripción:", error);
+    alert(`❌ ${error.message}`);
+  }
+});
+
+// Cargar descripciones
+async function loadDescriptions() {
+  try {
+    const tipo = document.querySelector('.tab-btn.active')?.getAttribute('data-type') || 'gasto';
+    const descripciones = await fetchAPI(`/api/descripciones/${userId}?tipo=${tipo}`);
+    
+    const lista = document.getElementById('descriptions-list-items');
+    
+    if (!lista) return;
+    
+    if (descripciones.length === 0) {
+      lista.innerHTML = '<li class="no-data">No hay descripciones registradas</li>';
+      return;
+    }
+    
+    lista.innerHTML = descripciones.map(d => `
+      <li>
+        <div>
+          <strong>${d.texto}</strong>
+          ${d.categoria ? `<br><small>${d.categoria}</small>` : ''}
+        </div>
+        <button class="delete-btn" onclick="deleteDescription(${d.id_descripcion})">🗑️</button>
+      </li>
+    `).join('');
+  } catch (err) {
+    console.error("❌ Error al cargar descripciones:", err);
+  }
+}
+
+// Eliminar descripción
+async function deleteDescription(id) {
+  if (!confirm("¿Eliminar esta descripción?")) return;
+  
+  try {
+    await fetchAPI(`/api/descripciones/${id}`, { method: "DELETE" });
+    alert("✅ Descripción eliminada");
+    await loadDescriptions();
+  } catch (err) {
+    console.error("❌ Error al eliminar:", err);
+    alert(`❌ ${err.message}`);
+  }
+}
+
+// Búsqueda de descripciones
+document.getElementById('search-descriptions')?.addEventListener('input', (e) => {
+  const searchTerm = e.target.value.toLowerCase();
+  const items = document.querySelectorAll('#descriptions-list-items li:not(.no-data)');
+  
+  items.forEach(item => {
+    const text = item.textContent.toLowerCase();
+    if (text.includes(searchTerm)) {
+      item.style.display = 'flex';
+    } else {
+      item.style.display = 'none';
+    }
+  });
+});
+
+// Exportar funciones globales
+window.deleteDescription = deleteDescription;
+
 // === INICIO DE LA APLICACIÓN ===
 console.log("🚀 OG Kash iniciado");
 console.log("🔗 Conectando a:", API_URL);

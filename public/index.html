@@ -31,22 +31,22 @@
        </div>
 
         <form id="login-form" class="auth-form">
-            <h2>Iniciar Sesión</h2>
-            <label for="login-user">Usuario</label>
-            <input type="text" id="login-user" name="username" placeholder="Usuario:" autocomplete="username" required>
-            <label for="login-password">Contraseña</label>
-            <input type="password" id="login-password" name="password" placeholder="Contraseña:" autocomplete="current-password" required>
+            <h2>Login</h2>
+            <label for="login-user"></label>
+            <input type="text" id="login-user" name="username" placeholder="Username:" autocomplete="username" required>
+            <label for="login-password"></label>
+            <input type="password" id="login-password" name="password" placeholder="Password:" autocomplete="current-password" required>
             <p class="forgot-password">¿Olvidaste la Contraseña?</p>
             <button type="submit" class="btn primary">Login</button>
             <button type="button" class="btn secondary" id="show-signup">Sign up</button>
         </form>
 
         <form id="signup-form" class="auth-form hidden">
-            <h2>Registrarse</h2>
-            <label for="signup-user">Usuario</label>
-            <input type="text" id="signup-user" name="new-username" placeholder="Usuario:" autocomplete="username" required>
-            <label for="signup-password">Contraseña</label>
-            <input type="password" id="signup-password" name="new-password" placeholder="Contraseña:" autocomplete="new-password" required>
+            <h2>Sign up</h2>
+            <label for="signup-user"></label>
+            <input type="text" id="signup-user" name="new-username" placeholder="Username:" autocomplete="username" required>
+            <label for="signup-password"></label>
+            <input type="password" id="signup-password" name="new-password" placeholder="Password:" autocomplete="new-password" required>
             <button type="submit" class="btn primary">Sign up</button>
             <button type="button" class="btn secondary" id="show-login">Volver a Login</button>
         </form>
@@ -80,8 +80,9 @@
         <section class="quick-actions">
             <button class="action-btn income-btn" id="quick-add-income">+ Ingreso</button>
             <button class="action-btn expense-btn" id="quick-add-expense">- Gasto</button>
-            <button class="action-btn budget-btn" id="manage-budgets">💰 Presupuestos</button>
-            <button class="action-btn report-btn" id="view-reports">📊 Reportes</button>
+            <button class="action-btn budget-btn" id="manage-budgets">Presup.</button>
+            <button class="action-btn descriptions-btn" id="manage-descriptions">Descrip.</button>
+            <button class="action-btn report-btn" id="view-reports">Reportes</button>
         </section>
 
         <section class="transaction-list-summary">
@@ -267,6 +268,51 @@
 
         <!-- Botón de volver -->
         <button id="back-from-reports" class="btn tertiary" style="margin-top: 30px;">Volver al Dashboard</button>
+    </div>
+
+    <!-- PANTALLA DE DESCRIPCIONES -->
+    <div id="descriptions-screen" class="screen hidden">
+        <header>
+            <button id="back-from-descriptions" class="back-btn">←</button>
+            <h1 class="header-title">Descripciones</h1>
+        </header>
+
+        <div class="tabs-container">
+            <button class="tab-btn active" data-type="gasto">Gastos</button>
+            <button class="tab-btn" data-type="ingreso">Ingresos</button>
+        </div>
+
+        <button id="show-description-form" class="btn secondary">+ Nueva Descripción</button>
+
+        <div id="description-form-container" class="form-container hidden">
+            <form id="description-form">
+                <h3 id="form-title">Nueva Descripción</h3>
+                
+                <input type="hidden" id="description-id">
+                <input type="hidden" id="description-type" value="gasto">
+                
+                <label for="description-text">Descripción:</label>
+                <input type="text" id="description-text" placeholder="Ej: Supermercado" required>
+                
+                <label for="description-category">Categoría:</label>
+                <select id="description-category">
+                    <option value="">Sin categoría</option>
+                </select>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn primary">Guardar</button>
+                    <button type="button" id="cancel-description" class="btn secondary">Cancelar</button>
+                </div>
+            </form>
+        </div>
+
+        <section class="descriptions-list">
+            <h3>Mis Descripciones</h3>
+            <input type="text" id="search-descriptions" placeholder="Buscar...">
+            <ul id="descriptions-list-items">
+                <li class="no-data">No hay descripciones</li>
+            </ul>
+        </section>
     </div>
 
     <!-- ✅ Scripts al final del body - ORDEN CORRECTO -->
