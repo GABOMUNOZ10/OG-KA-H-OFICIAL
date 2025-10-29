@@ -200,16 +200,18 @@ app.post("/api/usuarios", async (req, res) => {
 });
 
 app.post("/api/login", async (req, res) => {
-  const { correo, contrasena } = req.body;
+  const { correo, contrasena, nombre } = req.body;  // ✅ Acepta ambos
   
-  if (!correo || !contrasena) {
-    return res.status(400).json({ error: "Correo y contraseña requeridos" });
+  const usuario = correo || nombre;  // ✅ Usa el que venga
+  
+  if (!usuario || !contrasena) {
+    return res.status(400).json({ error: "Usuario y contraseña requeridos" });
   }
   
   try {
     const result = await pool.query(
-      "SELECT id_usuario, nombre, correo FROM usuarios WHERE correo = $1 AND contrasena = $2",
-      [correo.trim(), contrasena]
+      "SELECT id_usuario, nombre, correo FROM usuarios WHERE (correo = $1 OR nombre = $1) AND contrasena = $2",
+      [usuario.trim(), contrasena]
     );
     
     if (result.rows.length > 0) {
