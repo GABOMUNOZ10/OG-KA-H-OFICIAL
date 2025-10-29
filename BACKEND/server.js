@@ -30,9 +30,16 @@ app.use(cors({
 app.use(express.json());
 
 // Servir archivos estáticos desde la carpeta public
-const publicPath = path.join(process.cwd(), '..', 'public');
+const publicPath = path.join(__dirname, '..', 'public');
 console.log("   Carpeta public:", publicPath);
 app.use(express.static(publicPath));
+
+// Y al final, agrega esto antes del app.listen:
+app.get('*', (req, res) => {
+  if (!req.path.startsWith('/api')) {
+    res.sendFile(path.join(publicPath, 'index.html'));
+  }
+});
 
 // ✅ CONFIGURACIÓN CORREGIDA - PASSWORD CORRECTA
 const dbConfig = {
