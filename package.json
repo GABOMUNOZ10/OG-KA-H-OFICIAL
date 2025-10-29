@@ -1,8 +1,10 @@
 ﻿{
   "name": "og-kash",
   "version": "1.0.0",
+  "description": "OG Kash - Personal Finance Manager",
   "scripts": {
-    "start": "cd BACKEND && npm start"
+    "start": "node BACKEND/server.js",
+    "dev": "cd BACKEND && npm run dev"
   },
   "engines": {
     "node": ">=18.0.0"
