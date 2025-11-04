@@ -30,16 +30,9 @@ app.use(cors({
 app.use(express.json());
 
 // Servir archivos estáticos desde la carpeta public
-const publicPath = path.join(__dirname, '..', 'public');
+const publicPath = path.join(process.cwd(), '..', 'public');
 console.log("   Carpeta public:", publicPath);
 app.use(express.static(publicPath));
-
-// Y al final, agrega esto antes del app.listen:
-app.get('*', (req, res) => {
-  if (!req.path.startsWith('/api')) {
-    res.sendFile(path.join(publicPath, 'index.html'));
-  }
-});
 
 // ✅ CONFIGURACIÓN CORREGIDA - PASSWORD CORRECTA
 const dbConfig = {
@@ -200,18 +193,16 @@ app.post("/api/usuarios", async (req, res) => {
 });
 
 app.post("/api/login", async (req, res) => {
-  const { correo, contrasena, nombre } = req.body;  // ✅ Acepta ambos
+  const { correo, contrasena } = req.body;
   
-  const usuario = correo || nombre;  // ✅ Usa el que venga
-  
-  if (!usuario || !contrasena) {
-    return res.status(400).json({ error: "Usuario y contraseña requeridos" });
+  if (!correo || !contrasena) {
+    return res.status(400).json({ error: "Correo y contraseña requeridos" });
   }
   
   try {
     const result = await pool.query(
-      "SELECT id_usuario, nombre, correo FROM usuarios WHERE (correo = $1 OR nombre = $1) AND contrasena = $2",
-      [usuario.trim(), contrasena]
+      "SELECT id_usuario, nombre, correo FROM usuarios WHERE correo = $1 AND contrasena = $2",
+      [correo.trim(), contrasena]
     );
     
     if (result.rows.length > 0) {
