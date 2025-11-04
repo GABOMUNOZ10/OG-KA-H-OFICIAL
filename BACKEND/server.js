@@ -20,11 +20,29 @@ console.log("   Directorio actual:", process.cwd());
 console.log("   NODE_ENV:", process.env.NODE_ENV || "development");
 console.log("   PORT:", PORT);
 
-// CORS
+// ✅ CORS CONFIGURADO PARA GABOMUNOZ10
+const allowedOrigins = [
+  'http://localhost:5500',
+  'http://127.0.0.1:5500',
+  'http://localhost:3000',
+  'https://gabomunoz10.github.io',
+  process.env.FRONTEND_URL
+].filter(Boolean);
+
 app.use(cors({
-  origin: "*",
+  origin: function (origin, callback) {
+    // Permitir requests sin origin (como Postman, Thunder Client)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1 || origin.includes('github.io')) {
+      callback(null, true);
+    } else {
+      callback(null, true); // En producción considera restringir esto
+    }
+  },
+  credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type"]
+  allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
 app.use(express.json());
@@ -34,18 +52,33 @@ const publicPath = path.join(process.cwd(), '..', 'public');
 console.log("   Carpeta public:", publicPath);
 app.use(express.static(publicPath));
 
-// ✅ CONFIGURACIÓN CORREGIDA - PASSWORD CORRECTA
-const dbConfig = {
-  connectionString: process.env.DATABASE_PUBLIC_URL || 
-                   "postgresql://postgres:ErMgAfoTewGrcfRebkisKqLWvloIyniA@shortline.proxy.rlwy.net:37919/railway",
-  ssl: {
-    rejectUnauthorized: false
-  }
-};
+// ✅ CONEXIÓN A BASE DE DATOS - Funciona local Y en Railway
+const isProduction = process.env.NODE_ENV === 'production' || process.env.DATABASE_PUBLIC_URL;
+
+let dbConfig;
+
+if (isProduction) {
+  // Railway PostgreSQL
+  dbConfig = {
+    connectionString: process.env.DATABASE_PUBLIC_URL,
+    ssl: {
+      rejectUnauthorized: false
+    }
+  };
+  console.log("   Base de datos: Railway PostgreSQL (Producción)");
+} else {
+  // PostgreSQL Local
+  dbConfig = {
+    user: process.env.DB_USER || 'postgres',
+    host: process.env.DB_HOST || 'localhost',
+    database: process.env.DB_NAME || 'ogkash',
+    password: process.env.DB_PASSWORD || 'tu_password_local',
+    port: process.env.DB_PORT || 5432
+  };
+  console.log("   Base de datos: PostgreSQL Local (Desarrollo)");
+}
 
 const pool = new Pool(dbConfig);
-
-console.log("   Base de datos: Railway PostgreSQL");
 console.log("");
 
 // Verificar conexión
@@ -53,8 +86,9 @@ pool.connect((err, client, release) => {
   if (err) {
     console.error("❌ Error conectar PostgreSQL:");
     console.error("   ", err.message);
+    process.exit(1); // Terminar si no hay DB
   } else {
-    console.log("✅ Conectado a PostgreSQL Railway");
+    console.log("✅ Conectado a PostgreSQL");
     console.log("   Host:", client.host);
     console.log("   Database:", client.database);
     console.log("");
@@ -127,6 +161,18 @@ async function crearTablas() {
       )
     `);
 
+    // ✅ NUEVA TABLA: Descripciones
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS descripciones (
+        id_descripcion SERIAL PRIMARY KEY,
+        id_usuario INTEGER NOT NULL REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
+        tipo VARCHAR(20) NOT NULL CHECK (tipo IN ('ingreso', 'gasto')),
+        texto TEXT NOT NULL,
+        categoria VARCHAR(100),
+        fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
     await client.query(`
       INSERT INTO categorias (nombre, tipo) VALUES
         ('Salario', 'ingreso'), ('Freelance', 'ingreso'), ('Negocio', 'ingreso'),
@@ -158,6 +204,15 @@ async function crearTablas() {
 crearTablas();
 
 // ====== RUTAS API ======
+
+app.get("/", (req, res) => {
+  res.json({ 
+    status: "online",
+    message: "OG Kash API funcionando correctamente",
+    version: "1.0.0",
+    timestamp: new Date().toISOString()
+  });
+});
 
 app.get("/api/health", (req, res) => {
   res.json({ 
@@ -321,10 +376,7 @@ app.get("/api/categorias/:tipo", async (req, res) => {
 app.post("/api/presupuestos", async (req, res) => {
   const { id_usuario, categoria, monto_limite, periodo_inicio, periodo_fin } = req.body;
   
-  console.log("📥 Datos recibidos para presupuesto:", req.body);
-  
   if (!id_usuario || !categoria || !monto_limite || !periodo_inicio || !periodo_fin) {
-    console.error("❌ Campos faltantes:", { id_usuario, categoria, monto_limite, periodo_inicio, periodo_fin });
     return res.status(400).json({ error: "Campos requeridos faltantes" });
   }
   
@@ -333,18 +385,14 @@ app.post("/api/presupuestos", async (req, res) => {
       "INSERT INTO presupuestos (id_usuario, descripcion, monto_limite, categoria, periodo_inicio, periodo_fin) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
       [id_usuario, `Presupuesto ${categoria}`, parseFloat(monto_limite), categoria, periodo_inicio, periodo_fin]
     );
-    console.log("✅ Presupuesto creado:", result.rows[0]);
     res.json(result.rows[0]);
   } catch (err) {
     console.error("❌ Error presupuesto:", err.message);
-    console.error("   Stack:", err.stack);
-    res.status(500).json({ error: "Error al crear presupuesto", details: err.message });
+    res.status(500).json({ error: "Error al crear presupuesto" });
   }
 });
 
 app.get("/api/presupuestos/:id_usuario", async (req, res) => {
-  console.log("📥 Obteniendo presupuestos para usuario:", req.params.id_usuario);
-  
   try {
     const result = await pool.query(
       `SELECT 
@@ -367,22 +415,63 @@ app.get("/api/presupuestos/:id_usuario", async (req, res) => {
        ORDER BY p.periodo_inicio DESC`,
       [req.params.id_usuario]
     );
-    console.log(`✅ ${result.rows.length} presupuestos encontrados`);
     res.json(result.rows);
   } catch (err) {
     console.error("❌ Error al obtener presupuestos:", err.message);
-    console.error("   Stack:", err.stack);
-    res.status(500).json({ error: "Error al obtener presupuestos", details: err.message });
+    res.status(500).json({ error: "Error al obtener presupuestos" });
   }
 });
 
 app.delete("/api/presupuestos/:id", async (req, res) => {
   try {
     await pool.query("DELETE FROM presupuestos WHERE id_presupuesto = $1", [req.params.id]);
-    console.log("✅ Presupuesto eliminado:", req.params.id);
     res.json({ message: "Eliminado" });
   } catch (err) {
     console.error("❌ Error al eliminar presupuesto:", err.message);
+    res.status(500).json({ error: "Error al eliminar" });
+  }
+});
+
+// DESCRIPCIONES
+app.post("/api/descripciones", async (req, res) => {
+  const { id_usuario, tipo, texto, categoria } = req.body;
+  
+  if (!id_usuario || !tipo || !texto) {
+    return res.status(400).json({ error: "Campos requeridos faltantes" });
+  }
+  
+  try {
+    const result = await pool.query(
+      "INSERT INTO descripciones (id_usuario, tipo, texto, categoria) VALUES ($1, $2, $3, $4) RETURNING *",
+      [id_usuario, tipo, texto, categoria]
+    );
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error("❌ Error descripción:", err.message);
+    res.status(500).json({ error: "Error al guardar descripción" });
+  }
+});
+
+app.get("/api/descripciones/:id_usuario", async (req, res) => {
+  try {
+    const tipo = req.query.tipo || 'gasto';
+    const result = await pool.query(
+      "SELECT * FROM descripciones WHERE id_usuario = $1 AND tipo = $2 ORDER BY fecha_creacion DESC",
+      [req.params.id_usuario, tipo]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error("❌ Error al obtener descripciones:", err.message);
+    res.status(500).json({ error: "Error al obtener descripciones" });
+  }
+});
+
+app.delete("/api/descripciones/:id", async (req, res) => {
+  try {
+    await pool.query("DELETE FROM descripciones WHERE id_descripcion = $1", [req.params.id]);
+    res.json({ message: "Eliminado" });
+  } catch (err) {
+    console.error("❌ Error al eliminar descripción:", err.message);
     res.status(500).json({ error: "Error al eliminar" });
   }
 });
@@ -421,9 +510,21 @@ app.use((req, res, next) => {
   }
 });
 
-app.listen(PORT, () => {
+// Manejo de errores global
+app.use((err, req, res, next) => {
+  console.error("💥 Error no manejado:", err);
+  res.status(500).json({ 
+    error: "Error interno del servidor",
+    message: err.message 
+  });
+});
+
+app.listen(PORT, "0.0.0.0", () => {
   console.log("=".repeat(50));
   console.log(`✅ Servidor corriendo en puerto ${PORT}`);
   console.log(`🌐 http://localhost:${PORT}`);
+  if (process.env.RAILWAY_STATIC_URL) {
+    console.log(`🚀 Railway URL: https://${process.env.RAILWAY_STATIC_URL}`);
+  }
   console.log("=".repeat(50) + "\n");
 });
