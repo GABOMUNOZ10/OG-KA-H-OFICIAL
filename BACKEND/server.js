@@ -20,54 +20,56 @@ console.log("   Directorio actual:", process.cwd());
 console.log("   NODE_ENV:", process.env.NODE_ENV || "development");
 console.log("   PORT:", PORT);
 
-// ✅ CORS CONFIGURADO PARA GABOMUNOZ10
+// ========== CORS ACTUALIZADO PARA GITHUB PAGES ==========
 const allowedOrigins = [
   'http://localhost:5500',
   'http://127.0.0.1:5500',
   'http://localhost:3000',
-  'https://gabomunoz10.github.io',
-  process.env.FRONTEND_URL
-].filter(Boolean);
+  'https://gabomunoz10.github.io' // ✅ Tu frontend en GitHub Pages
+];
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Permitir requests sin origin (como Postman, Thunder Client)
+    // Permitir requests sin origin (Postman, Thunder Client, etc.)
     if (!origin) return callback(null, true);
     
-    if (allowedOrigins.indexOf(origin) !== -1 || origin.includes('github.io')) {
+    // Permitir orígenes específicos
+    if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
-      callback(null, true); // En producción considera restringir esto
+      console.warn("⚠️ Origen bloqueado por CORS:", origin);
+      callback(new Error('No permitido por CORS'));
     }
   },
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE"],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
 app.use(express.json());
 
-// Servir archivos estáticos desde la carpeta public
+// Servir archivos estáticos desde la carpeta public (solo para desarrollo local)
 const publicPath = path.join(process.cwd(), '..', 'public');
 console.log("   Carpeta public:", publicPath);
 app.use(express.static(publicPath));
 
-// ✅ CONEXIÓN A BASE DE DATOS - Funciona local Y en Railway
-const isProduction = process.env.NODE_ENV === 'production' || process.env.DATABASE_PUBLIC_URL;
+// ========== CONFIGURACIÓN DE BASE DE DATOS CORREGIDA ==========
+const isProduction = process.env.NODE_ENV === 'production';
 
 let dbConfig;
 
 if (isProduction) {
-  // Railway PostgreSQL
+  // ✅ PRODUCCIÓN (Railway): usar DATABASE_URL que Railway inyecta automáticamente
   dbConfig = {
-    connectionString: process.env.DATABASE_PUBLIC_URL,
+    connectionString: process.env.DATABASE_URL, // ✅ CAMBIADO de DATABASE_PUBLIC_URL
     ssl: {
       rejectUnauthorized: false
     }
   };
   console.log("   Base de datos: Railway PostgreSQL (Producción)");
+  console.log("   DATABASE_URL presente:", !!process.env.DATABASE_URL);
 } else {
-  // PostgreSQL Local
+  // ✅ DESARROLLO LOCAL: sin SSL
   dbConfig = {
     user: process.env.DB_USER || 'postgres',
     host: process.env.DB_HOST || 'localhost',
@@ -161,7 +163,6 @@ async function crearTablas() {
       )
     `);
 
-    // ✅ NUEVA TABLA: Descripciones
     await client.query(`
       CREATE TABLE IF NOT EXISTS descripciones (
         id_descripcion SERIAL PRIMARY KEY,
@@ -210,6 +211,7 @@ app.get("/", (req, res) => {
     status: "online",
     message: "OG Kash API funcionando correctamente",
     version: "1.0.0",
+    environment: process.env.NODE_ENV || 'development',
     timestamp: new Date().toISOString()
   });
 });
@@ -218,6 +220,7 @@ app.get("/api/health", (req, res) => {
   res.json({ 
     status: "online",
     message: "OG Kash API funcionando",
+    environment: process.env.NODE_ENV || 'development',
     timestamp: new Date().toISOString()
   });
 });
@@ -501,10 +504,14 @@ app.get("/api/balance/:id_usuario", async (req, res) => {
   }
 });
 
-// CATCH-ALL - Servir index.html para todas las rutas no API
+// CATCH-ALL - Servir index.html para todas las rutas no API (solo desarrollo)
 app.use((req, res, next) => {
   if (!req.path.startsWith('/api')) {
-    res.sendFile(path.join(publicPath, "index.html"));
+    if (isProduction) {
+      res.status(404).json({ error: "Ruta no encontrada" });
+    } else {
+      res.sendFile(path.join(publicPath, "index.html"));
+    }
   } else {
     res.status(404).json({ error: "API endpoint not found" });
   }
@@ -522,9 +529,11 @@ app.use((err, req, res, next) => {
 app.listen(PORT, "0.0.0.0", () => {
   console.log("=".repeat(50));
   console.log(`✅ Servidor corriendo en puerto ${PORT}`);
-  console.log(`🌐 http://localhost:${PORT}`);
+  console.log(`🌐 Entorno: ${process.env.NODE_ENV || 'development'}`);
   if (process.env.RAILWAY_STATIC_URL) {
     console.log(`🚀 Railway URL: https://${process.env.RAILWAY_STATIC_URL}`);
+  } else {
+    console.log(`🌐 http://localhost:${PORT}`);
   }
   console.log("=".repeat(50) + "\n");
 });
