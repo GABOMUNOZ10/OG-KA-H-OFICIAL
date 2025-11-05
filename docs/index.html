@@ -31,24 +31,22 @@
        </div>
 
         <form id="login-form" class="auth-form">
-            <h2>Login</h2>
             <label for="login-user"></label>
             <input type="text" id="login-user" name="username" placeholder="Username:" autocomplete="username" required>
             <label for="login-password"></label>
             <input type="password" id="login-password" name="password" placeholder="Password:" autocomplete="current-password" required>
-            <p class="forgot-password">¿Olvidaste la Contraseña?</p>
+            <p class="forgot-password">Forgot your password?</p>
             <button type="submit" class="btn primary">Login</button>
             <button type="button" class="btn secondary" id="show-signup">Sign up</button>
         </form>
 
         <form id="signup-form" class="auth-form hidden">
-            <h2>Sign up</h2>
             <label for="signup-user"></label>
             <input type="text" id="signup-user" name="new-username" placeholder="Username:" autocomplete="username" required>
             <label for="signup-password"></label>
             <input type="password" id="signup-password" name="new-password" placeholder="Password:" autocomplete="new-password" required>
             <button type="submit" class="btn primary">Sign up</button>
-            <button type="button" class="btn secondary" id="show-login">Volver a Login</button>
+            <button type="button" class="btn secondary" id="show-login">Back to Login</button>
         </form>
     </div>
 
@@ -56,80 +54,80 @@
     <div id="dashboard-screen" class="screen hidden">
         <header>
             <h1 class="header-title">Dashboard</h1>
-            <p>Hola, <span id="current-user">Usuario</span></p>
+            <p>Hello, <span id="current-user">Usuario</span></p>
         </header>
 
         <!-- Balance Summary -->
         <section class="balance-summary">
             <div class="balance-card">
-                <h3>Balance Total</h3>
-                <p id="current-balance" class="balance-amount">$0.00</p>
+                <h3>Balance</h3>
+                <p id="current-balance" class="balance-amount">$0,00</p>
             </div>
             <div class="balance-details-cards">
                 <div class="detail-card">
-                    <span class="detail-label">Ingresos:</span>
-                    <strong id="total-ingresos">$0.00</strong>
+                    <span class="detail-label">Income:</span>
+                    <strong id="total-ingresos">$0,00</strong>
                 </div>
                 <div class="detail-card">
-                    <span class="detail-label">Gastos:</span>
-                    <strong id="total-gastos">$0.00</strong>
+                    <span class="detail-label">Expenses:</span>
+                    <strong id="total-gastos">$0,00</strong>
                 </div>
             </div>
         </section>
 
         <section class="quick-actions">
-            <button class="action-btn income-btn" id="quick-add-income">+ Ingreso</button>
-            <button class="action-btn expense-btn" id="quick-add-expense">- Gasto</button>
-            <button class="action-btn budget-btn" id="manage-budgets">Presup.</button>
-            <button class="action-btn descriptions-btn" id="manage-descriptions">Descrip.</button>
-            <button class="action-btn report-btn" id="view-reports">Reportes</button>
+            <button class="action-btn income-btn" id="quick-add-income">+ Income</button>
+            <button class="action-btn expense-btn" id="quick-add-expense">- Expense</button>
+            <button class="action-btn budget-btn" id="manage-budgets">Budgets</button>
+            <button class="action-btn descriptions-btn" id="manage-descriptions">Descriptions</button>
+            <button class="action-btn report-btn" id="view-reports">Reports</button>
         </section>
 
         <section class="transaction-list-summary">
-            <h3>Últimas Transacciones</h3>
+            <h3>Recent transactions</h3>
             <ul id="transaction-list">
-                <li>No hay transacciones aún.</li>
+                <li>No transactions yet.</li>
             </ul>
         </section>
-        
-        <button id="logout-btn" class="btn tertiary">Cerrar Sesión</button>
+
+        <button id="logout-btn" class="btn tertiary">Log Out</button>
     </div>
 
     <!-- PANTALLA DE INGRESOS -->
     <div id="income-screen" class="screen hidden">
         <header>
             <button id="back-from-income" class="back-btn">←</button>
-            <h1 class="header-title">Nuevo Ingreso</h1>
+            <h1 class="header-title">add income</h1>
         </header>
 
         <form id="income-form">
-            <label for="income-amount">Monto ($):</label>
-            <input type="number" id="income-amount" step="0.01" min="0.01" required>
+            <label for="income-amount">amount ($):</label>
+            <input type="text" id="income-amount" placeholder="0,00" required>
 
-            <label for="income-category">Categoría:</label>
+            <label for="income-category">Category:</label>
             <select id="income-category" required>
-                <option value="">Selecciona una categoría</option>
+                <option value="">Select a category</option>
             </select>
 
-            <label for="income-description">Descripción:</label>
+            <label for="income-description">Description:</label>
             <input type="text" id="income-description" required>
 
-            <label for="income-date">Fecha:</label>
+            <label for="income-date">Date:</label>
             <input type="date" id="income-date" required>
 
-            <label for="income-method">Método de Pago:</label>
+            <label for="income-method">Payment Method:</label>
             <select id="income-method" required>
-                <option value="Efectivo">Efectivo</option>
-                <option value="Transferencia">Transferencia</option>
-                <option value="Tarjeta">Tarjeta</option>
-                <option value="Cheque">Cheque</option>
+                <option value="Efectivo">Cash</option>
+                <option value="Transferencia">Transfer</option>
+                <option value="Tarjeta">Card</option>
+                <option value="Cheque">Check</option>
             </select>
 
-            <button type="submit" class="btn primary">Guardar Ingreso</button>
+            <button type="submit" class="btn primary">Save Income</button>
         </form>
 
         <section class="income-list">
-            <h3>Mis Ingresos</h3>
+            <h3>My Income</h3>
             <ul id="income-list-items"></ul>
         </section>
     </div>
@@ -138,37 +136,37 @@
     <div id="expense-screen" class="screen hidden">
         <header>
             <button id="back-from-expense" class="back-btn">←</button>
-            <h1 class="header-title">Nuevo Gasto</h1>
+            <h1 class="header-title">New Expense</h1>
         </header>
 
         <form id="expense-form">
-            <label for="expense-amount">Monto ($):</label>
-            <input type="number" id="expense-amount" step="0.01" min="0.01" required>
+            <label for="expense-amount">Amount ($):</label>
+            <input type="text" id="expense-amount" placeholder="0,00" required>
 
-            <label for="expense-category">Categoría:</label>
+            <label for="expense-category">Category:</label>
             <select id="expense-category" required>
-                <option value="">Selecciona una categoría</option>
+                <option value="">Select a category</option>
             </select>
 
-            <label for="expense-description">Descripción:</label>
+            <label for="expense-description">Description:</label>
             <input type="text" id="expense-description" required>
 
-            <label for="expense-date">Fecha:</label>
+            <label for="expense-date">Date:</label>
             <input type="date" id="expense-date" required>
 
-            <label for="expense-method">Método de Pago:</label>
+            <label for="expense-method">Payment Method:</label>
             <select id="expense-method" required>
-                <option value="Efectivo">Efectivo</option>
-                <option value="Transferencia">Transferencia</option>
-                <option value="Tarjeta">Tarjeta</option>
-                <option value="Débito">Débito</option>
+                <option value="Efectivo">Cash</option>
+                <option value="Transferencia">Transfer</option>
+                <option value="Tarjeta">Card</option>
+                <option value="Débito">Debit</option>
             </select>
 
-            <button type="submit" class="btn primary">Guardar Gasto</button>
+            <button type="submit" class="btn primary">Save Expense</button>
         </form>
 
         <section class="expense-list">
-            <h3>Mis Gastos</h3>
+            <h3>My Expenses</h3>
             <ul id="expense-list-items"></ul>
         </section>
     </div>
@@ -177,34 +175,34 @@
     <div id="budget-screen" class="screen hidden">
         <header>
             <button id="back-from-budget" class="back-btn">←</button>
-            <h1 class="header-title">Presupuestos</h1>
+            <h1 class="header-title">Budgets</h1>
         </header>
 
-        <button id="show-budget-form" class="btn secondary">+ Crear Presupuesto</button>
+        <button id="show-budget-form" class="btn secondary">+ Create Budget</button>
 
         <form id="budget-form" class="hidden">
-            <h3>Nuevo Presupuesto</h3>
-            
-            <label for="budget-category">Categoría:</label>
+            <h3>New Budget</h3>
+
+            <label for="budget-category">Category:</label>
             <select id="budget-category" required>
-                <option value="">Selecciona una categoría</option>
+                <option value="">Select a category</option>
             </select>
 
-            <label for="budget-amount">Monto Límite ($):</label>
-            <input type="number" id="budget-amount" step="0.01" min="0.01" required>
+            <label for="budget-amount">Limit Amount ($):</label>
+            <input type="text" id="budget-amount" placeholder="0,00" required>
 
-            <label for="budget-start">Fecha Inicio:</label>
+            <label for="budget-start">Start Date:</label>
             <input type="date" id="budget-start" required>
 
-            <label for="budget-end">Fecha Fin:</label>
+            <label for="budget-end">End Date:</label>
             <input type="date" id="budget-end" required>
 
-            <button type="submit" class="btn primary">Guardar Presupuesto</button>
-            <button type="button" id="cancel-budget" class="btn secondary">Cancelar</button>
+            <button type="submit" class="btn primary">Save Budget</button>
+            <button type="button" id="cancel-budget" class="btn secondary">Cancel</button>
         </form>
 
         <section class="budget-list">
-            <h3>Mis Presupuestos</h3>
+            <h3>My Budgets</h3>
             <div id="budget-list-items"></div>
         </section>
     </div>
@@ -221,14 +219,6 @@
         <section class="report-chart">
             <canvas id="financeChart"></canvas>
             <div class="report-chart-legend">
-                <div class="legend-item">
-                    <div class="legend-color expenses"></div>
-                    <span>Gastos</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color income"></div>
-                    <span>Ingresos</span>
-                </div>
             </div>
         </section>
 
@@ -239,78 +229,78 @@
         <section class="report-summary">
             <div class="report-card balance-card">
                 <h3>Total Balance:</h3>
-                <p class="report-amount" id="report-balance">$0.00</p>
+                <p class="report-amount" id="report-balance">$0,00</p>
             </div>
             <div class="report-card income-card">
                 <h3>Total Income</h3>
-                <p class="report-amount" id="report-ingresos">$0.00</p>
+                <p class="report-amount" id="report-ingresos">$0,00</p>
             </div>
             <div class="report-card expense-card">
                 <h3>Total Expenses</h3>
-                <p class="report-amount" id="report-gastos">$0.00</p>
+                <p class="report-amount" id="report-gastos">$0,00</p>
             </div>
         </section>
 
         <!-- ✅ NUEVA SECCIÓN: Filtros y lista de transacciones -->
         <section class="report-transactions">
             <div class="report-filters">
-                <h3>Transacciones <span id="filter-label">(Todas)</span></h3>
+                <h3>Transactions <span id="filter-label">(All)</span></h3>
                 <div class="filter-buttons">
-                    <button class="filter-btn active" data-filter="all">Todas</button>
-                    <button class="filter-btn" data-filter="income">Ingresos</button>
-                    <button class="filter-btn" data-filter="expense">Gastos</button>
+                    <button class="filter-btn active" data-filter="all">All</button>
+                    <button class="filter-btn" data-filter="income">Income</button>
+                    <button class="filter-btn" data-filter="expense">Expenses</button>
                 </div>
             </div>
             <ul id="report-transaction-list" class="transaction-list">
-                <li>No hay transacciones para mostrar.</li>
+                <li>No transactions to show.</li>
             </ul>
         </section>
 
         <!-- Botón de volver -->
-        <button id="back-from-reports" class="btn tertiary" style="margin-top: 30px;">Volver al Dashboard</button>
+        <button id="back-from-reports" class="btn tertiary" style="margin-top: 30px;">Back to Dashboard</button>
     </div>
 
     <!-- PANTALLA DE DESCRIPCIONES -->
     <div id="descriptions-screen" class="screen hidden">
         <header>
             <button id="back-from-descriptions" class="back-btn">←</button>
-            <h1 class="header-title">Descripciones</h1>
+            <h1 class="header-title">Descriptions</h1>
         </header>
 
         <div class="tabs-container">
-            <button class="tab-btn active" data-type="gasto">Gastos</button>
-            <button class="tab-btn" data-type="ingreso">Ingresos</button>
+            <button class="tab-btn active" data-type="gasto">Expenses</button>
+            <button class="tab-btn" data-type="ingreso">Income</button>
         </div>
 
-        <button id="show-description-form" class="btn secondary">+ Nueva Descripción</button>
+        <button id="show-description-form" class="btn secondary">+ New Description</button>
 
         <div id="description-form-container" class="form-container hidden">
             <form id="description-form">
-                <h3 id="form-title">Nueva Descripción</h3>
-                
+                <h3 id="form-title">New Description</h3>
+
                 <input type="hidden" id="description-id">
-                <input type="hidden" id="description-type" value="gasto">
-                
-                <label for="description-text">Descripción:</label>
+                <input type="hidden" id="description-type" value="expense">
+
+                <label for="description-text">Description:</label>
                 <input type="text" id="description-text" placeholder="Ej: Supermercado" required>
-                
-                <label for="description-category">Categoría:</label>
+
+                <label for="description-category">Category:</label>
                 <select id="description-category">
-                    <option value="">Sin categoría</option>
+                    <option value="">Uncategorized</option>
                 </select>
 
                 <div class="form-actions">
-                    <button type="submit" class="btn primary">Guardar</button>
-                    <button type="button" id="cancel-description" class="btn secondary">Cancelar</button>
+                    <button type="submit" class="btn primary">Save</button>
+                    <button type="button" id="cancel-description" class="btn secondary">Cancel</button>
                 </div>
             </form>
         </div>
 
         <section class="descriptions-list">
-            <h3>Mis Descripciones</h3>
-            <input type="text" id="search-descriptions" placeholder="Buscar...">
+            <h3>My Descriptions</h3>
+            <input type="text" id="search-descriptions" placeholder="Search...">
             <ul id="descriptions-list-items">
-                <li class="no-data">No hay descripciones</li>
+                <li class="no-data">No descriptions</li>
             </ul>
         </section>
     </div>

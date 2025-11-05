@@ -1,13 +1,75 @@
 const API_URL = window.location.hostname.includes('github.io')
   ? 'https://og-ka-h-oficial-production.up.railway.app'
   : window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-  ? 'http://localhost:5500'
+  ? 'https://og-ka-h-oficial-production.up.railway.app'
   : 'https://og-ka-h-oficial-production.up.railway.app';
   
 console.log("🌐 Entorno detectado:", window.location.hostname);
 console.log("🔗 API URL configurada:", API_URL);
-console.log("🌐 Entorno detectado:", window.location.hostname);
-console.log("🔗 API URL configurada:", API_URL);
+
+// === FUNCIÓN PARA FORMATEAR NÚMEROS AL ESTILO COLOMBIANO ===
+function formatearPesos(valor) {
+  if (isNaN(valor) || valor === null || valor === undefined) {
+    valor = 0;
+  }
+  return new Intl.NumberFormat('es-CO', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(valor);
+}
+
+// === FUNCIÓN PARA PARSEAR NÚMEROS EN FORMATO COLOMBIANO ===
+function parsearPesos(texto) {
+  if (!texto) return 0;
+  // Eliminar todo excepto números, comas y puntos
+  texto = texto.toString().trim();
+  // Eliminar puntos (separadores de miles)
+  texto = texto.replace(/\./g, '');
+  // Reemplazar coma por punto (decimal)
+  texto = texto.replace(',', '.');
+  return parseFloat(texto) || 0;
+}
+
+// === FUNCIÓN PARA FORMATEAR INPUT EN TIEMPO REAL ===
+function formatearInputPesos(input) {
+  input.addEventListener('input', function(e) {
+    let valor = e.target.value;
+    
+    // Eliminar todo excepto números y coma
+    valor = valor.replace(/[^\d,]/g, '');
+    
+    // Permitir solo una coma
+    const partes = valor.split(',');
+    if (partes.length > 2) {
+      valor = partes[0] + ',' + partes.slice(1).join('');
+    }
+    
+    // Limitar decimales a 2
+    if (partes.length === 2 && partes[1].length > 2) {
+      valor = partes[0] + ',' + partes[1].substring(0, 2);
+    }
+    
+    e.target.value = valor;
+  });
+  
+  input.addEventListener('blur', function(e) {
+    let valor = e.target.value;
+    if (!valor) {
+      e.target.value = '0,00';
+      return;
+    }
+    
+    const numero = parsearPesos(valor);
+    e.target.value = formatearPesos(numero);
+  });
+  
+  input.addEventListener('focus', function(e) {
+    let valor = e.target.value;
+    if (valor === '0,00') {
+      e.target.value = '';
+    }
+  });
+}
 
 // === REFERENCIAS DEL DOM ===
 const screens = {
@@ -55,7 +117,7 @@ Object.entries(elements).forEach(([key, element]) => {
     console.warn(`⚠️ ${key} NO encontrado`);
   }
 });
-console.log(""); // Línea en blanco
+console.log("");
 
 // === FUNCIONES AUXILIARES ===
 function navigateTo(screen) {
@@ -65,16 +127,14 @@ function navigateTo(screen) {
     return;
   }
 
-  console.log("📍 Navegando a:", screen.id);
+  console.log("🔀 Navegando a:", screen.id);
 
-  // Ocultar todas las pantallas que existan
   Object.values(screens).forEach(s => {
     if (s && s.classList) {
       s.classList.add('hidden');
     }
   });
 
-  // Mostrar la pantalla seleccionada
   if (screen && screen.classList) {
     screen.classList.remove('hidden');
     console.log("✅ Pantalla mostrada:", screen.id);
@@ -91,7 +151,6 @@ function setTodayDate(inputId) {
   }
 }
 
-// ✅ FUNCIÓN MEJORADA PARA FETCH CON MANEJO DE ERRORES
 async function fetchAPI(endpoint, options = {}) {
   try {
     const url = `${API_URL}${endpoint}`;
@@ -107,7 +166,6 @@ async function fetchAPI(endpoint, options = {}) {
 
     console.log(`📥 Response status: ${response.status} ${response.statusText}`);
 
-    // Intentar parsear JSON solo si hay contenido
     const contentType = response.headers.get("content-type");
     let data = null;
     
@@ -136,13 +194,13 @@ async function loadBalance() {
     const data = await fetchAPI(`/api/balance/${userId}`);
     
     if (elements.currentBalance) {
-      elements.currentBalance.textContent = `$${data.balance.toFixed(2)}`;
+      elements.currentBalance.textContent = `$${formatearPesos(data.balance)}`;
     }
     if (elements.totalIngresos) {
-      elements.totalIngresos.textContent = `$${data.ingresos.toFixed(2)}`;
+      elements.totalIngresos.textContent = `$${formatearPesos(data.ingresos)}`;
     }
     if (elements.totalGastos) {
-      elements.totalGastos.textContent = `$${data.gastos.toFixed(2)}`;
+      elements.totalGastos.textContent = `$${formatearPesos(data.gastos)}`;
     }
     
     console.log("✅ Balance cargado:", data);
@@ -179,7 +237,7 @@ function renderTransactions() {
   }
 
   if (transactions.length === 0) {
-    elements.transactionList.innerHTML = '<li>No hay transacciones aún.</li>';
+    elements.transactionList.innerHTML = '<li>No transactions yet.</li>';
     return;
   }
   
@@ -190,7 +248,7 @@ function renderTransactions() {
         <small>${t.categoria || ''} - ${t.fecha}</small>
       </div>
       <span class="${t.type === 'expense' ? 'transaction-expense' : 'transaction-income'}">
-        ${t.type === 'income' ? '+' : '-'}$${parseFloat(t.monto).toFixed(2)}
+        ${t.type === 'income' ? '+' : '-'}$${formatearPesos(parseFloat(t.monto))}
       </span>
     </li>
   `).join('');
@@ -238,7 +296,7 @@ elements.signupForm?.addEventListener("submit", async e => {
   const contrasena = document.getElementById("signup-password")?.value.trim();
   
   if (!nombre || !contrasena) {
-    alert("⚠️ Por favor completa todos los campos");
+    alert("⚠️ Please complete all fields");
     return;
   }
   
@@ -294,7 +352,6 @@ elements.loginForm?.addEventListener("submit", async (e) => {
       
       console.log("📊 Cargando datos del usuario...");
       
-      // Cargar todos los datos necesarios
       await Promise.all([
         loadBalance(),
         loadTransactions(),
@@ -305,7 +362,6 @@ elements.loginForm?.addEventListener("submit", async (e) => {
       
       console.log("✅ Todos los datos cargados");
       
-      // Resetear formulario y navegar al dashboard
       elements.loginForm.reset();
       
       console.log("🚀 Navegando al dashboard...");
@@ -364,12 +420,20 @@ document.getElementById('back-from-income')?.addEventListener('click', () => {
   navigateTo(screens.dashboard);
 });
 
+// Formatear input de ingresos
+const incomeAmountInput = document.getElementById('income-amount');
+if (incomeAmountInput) {
+  formatearInputPesos(incomeAmountInput);
+}
+
 document.getElementById('income-form')?.addEventListener('submit', async e => {
   e.preventDefault();
   
+  const montoTexto = document.getElementById("income-amount")?.value;
+  
   const ingreso = {
     id_usuario: userId,
-    monto: parseFloat(document.getElementById("income-amount")?.value),
+    monto: parsearPesos(montoTexto),
     descripcion: document.getElementById("income-description")?.value.trim(),
     fecha: document.getElementById("income-date")?.value,
     categoria: document.getElementById("income-category")?.value,
@@ -382,8 +446,9 @@ document.getElementById('income-form')?.addEventListener('submit', async e => {
       body: JSON.stringify(ingreso)
     });
 
-    alert("✅ Ingreso registrado exitosamente");
+    alert("✅ Income registered successfully");
     document.getElementById("income-form").reset();
+    document.getElementById("income-amount").value = '0,00';
     setTodayDate('income-date');
     await Promise.all([loadBalance(), loadTransactions(), loadIncomeList()]);
   } catch (error) {
@@ -400,7 +465,7 @@ async function loadIncomeList() {
     if (!lista) return;
     
     if (ingresos.length === 0) {
-      lista.innerHTML = '<li>No hay ingresos registrados.</li>';
+      lista.innerHTML = '<li>No income registered.</li>';
       return;
     }
     
@@ -408,10 +473,10 @@ async function loadIncomeList() {
       <li class="transaction-item">
         <div>
           <strong>${i.descripcion}</strong><br>
-          <small>${i.categoria || 'Sin categoría'} - ${i.metodo_pago || 'N/A'} - ${i.fecha_ingreso}</small>
+          <small>${i.categoria || 'Uncategorized'} - ${i.metodo_pago || 'N/A'} - ${i.fecha_ingreso}</small>
         </div>
         <div>
-          <span class="transaction-income">+$${parseFloat(i.monto).toFixed(2)}</span>
+          <span class="transaction-income">+$${formatearPesos(parseFloat(i.monto))}</span>
           <button class="delete-btn" onclick="deleteIncome(${i.id_ingreso})">🗑️</button>
         </div>
       </li>
@@ -422,11 +487,11 @@ async function loadIncomeList() {
 }
 
 async function deleteIncome(id) {
-  if (!confirm("¿Eliminar este ingreso?")) return;
+  if (!confirm("Delete this income?")) return;
   
   try {
     await fetchAPI(`/api/ingresos/${id}`, { method: "DELETE" });
-    alert("✅ Ingreso eliminado");
+    alert("✅ Income deleted");
     await Promise.all([loadBalance(), loadTransactions(), loadIncomeList()]);
   } catch (err) {
     console.error("❌ Error al eliminar:", err);
@@ -439,12 +504,20 @@ document.getElementById('back-from-expense')?.addEventListener('click', () => {
   navigateTo(screens.dashboard);
 });
 
+// Formatear input de gastos
+const expenseAmountInput = document.getElementById('expense-amount');
+if (expenseAmountInput) {
+  formatearInputPesos(expenseAmountInput);
+}
+
 document.getElementById('expense-form')?.addEventListener('submit', async e => {
   e.preventDefault();
   
+  const montoTexto = document.getElementById("expense-amount")?.value;
+  
   const gasto = {
     id_usuario: userId,
-    monto: parseFloat(document.getElementById("expense-amount")?.value),
+    monto: parsearPesos(montoTexto),
     descripcion: document.getElementById("expense-description")?.value.trim(),
     fecha: document.getElementById("expense-date")?.value,
     categoria: document.getElementById("expense-category")?.value,
@@ -457,9 +530,8 @@ document.getElementById('expense-form')?.addEventListener('submit', async e => {
       body: JSON.stringify(gasto)
     });
 
-    alert("✅ Gasto registrado exitosamente");
+    alert("✅ Expense registered successfully");
     
-    // Verificar presupuestos
     const presupuestos = await fetchAPI(`/api/presupuestos/${userId}`);
     const presupuestoAfectado = presupuestos.find(p => 
       p.categoria === gasto.categoria && 
@@ -467,10 +539,11 @@ document.getElementById('expense-form')?.addEventListener('submit', async e => {
     );
     
     if (presupuestoAfectado) {
-      alert(`⚠️ ¡ALERTA! Has alcanzado o superado el presupuesto de ${gasto.categoria}\nLímite: $${presupuestoAfectado.monto_limite}\nGastado: $${presupuestoAfectado.gastado}`);
+      alert(`⚠️ ¡ALERTA! Has alcanzado o superado el presupuesto de ${gasto.categoria}\nLimit: $${formatearPesos(presupuestoAfectado.monto_limite)}\nGastado: $${formatearPesos(presupuestoAfectado.gastado)}`);
     }
     
     document.getElementById("expense-form").reset();
+    document.getElementById("expense-amount").value = '0,00';
     setTodayDate('expense-date');
     await Promise.all([loadBalance(), loadTransactions(), loadExpenseList()]);
   } catch (error) {
@@ -487,7 +560,7 @@ async function loadExpenseList() {
     if (!lista) return;
     
     if (gastos.length === 0) {
-      lista.innerHTML = '<li>No hay gastos registrados.</li>';
+      lista.innerHTML = '<li>No expenses registered.</li>';
       return;
     }
     
@@ -495,10 +568,10 @@ async function loadExpenseList() {
       <li class="transaction-item">
         <div>
           <strong>${g.descripcion}</strong><br>
-          <small>${g.categoria || 'Sin categoría'} - ${g.metodo_pago || 'N/A'} - ${g.fecha_gasto}</small>
+          <small>${g.categoria || 'Uncategorized'} - ${g.metodo_pago || 'N/A'} - ${g.fecha_gasto}</small>
         </div>
         <div>
-          <span class="transaction-expense">-$${parseFloat(g.monto).toFixed(2)}</span>
+          <span class="transaction-expense">-$${formatearPesos(parseFloat(g.monto))}</span>
           <button class="delete-btn" onclick="deleteExpense(${g.id_gasto})">🗑️</button>
         </div>
       </li>
@@ -509,11 +582,11 @@ async function loadExpenseList() {
 }
 
 async function deleteExpense(id) {
-  if (!confirm("¿Eliminar este gasto?")) return;
+  if (!confirm("Delete this expense?")) return;
   
   try {
     await fetchAPI(`/api/gastos/${id}`, { method: "DELETE" });
-    alert("✅ Gasto eliminado");
+    alert("✅ Expense deleted");
     await Promise.all([loadBalance(), loadTransactions(), loadExpenseList()]);
   } catch (err) {
     console.error("❌ Error al eliminar:", err);
@@ -549,13 +622,21 @@ document.getElementById('cancel-budget')?.addEventListener('click', () => {
   }
 });
 
+// Formatear input de presupuestos
+const budgetAmountInput = document.getElementById('budget-amount');
+if (budgetAmountInput) {
+  formatearInputPesos(budgetAmountInput);
+}
+
 document.getElementById('budget-form')?.addEventListener('submit', async e => {
   e.preventDefault();
+  
+  const montoTexto = document.getElementById("budget-amount")?.value;
   
   const presupuesto = {
     id_usuario: userId,
     categoria: document.getElementById("budget-category")?.value,
-    monto_limite: parseFloat(document.getElementById("budget-amount")?.value),
+    monto_limite: parsearPesos(montoTexto),
     periodo_inicio: document.getElementById("budget-start")?.value,
     periodo_fin: document.getElementById("budget-end")?.value
   };
@@ -566,10 +647,11 @@ document.getElementById('budget-form')?.addEventListener('submit', async e => {
       body: JSON.stringify(presupuesto)
     });
 
-    alert("✅ Presupuesto creado exitosamente");
+    alert("✅ Budget created successfully");
     const form = document.getElementById('budget-form');
     if (form) {
       form.reset();
+      document.getElementById("budget-amount").value = '0,00';
       form.classList.add('hidden');
     }
     await loadBudgets();
@@ -587,7 +669,7 @@ async function loadBudgets() {
     if (!container) return;
     
     if (presupuestos.length === 0) {
-      container.innerHTML = '<p>No hay presupuestos creados.</p>';
+      container.innerHTML = '<p>No budgets created.</p>';
       return;
     }
     
@@ -604,16 +686,16 @@ async function loadBudgets() {
             <button class="delete-btn" onclick="deleteBudget(${p.id_presupuesto})">🗑️</button>
           </div>
           <div class="budget-info">
-            <p><strong>Límite:</strong> $${limite.toFixed(2)}</p>
-            <p><strong>Gastado:</strong> $${gastado.toFixed(2)}</p>
-            <p><strong>Disponible:</strong> $${(limite - gastado).toFixed(2)}</p>
+            <p><strong>Limit:</strong> $${formatearPesos(limite)}</p>
+            <p><strong>Spent:</strong> $${formatearPesos(gastado)}</p>
+            <p><strong>Available:</strong> $${formatearPesos(limite - gastado)}</p>
           </div>
           <div class="budget-bar">
             <div class="budget-progress" style="width: ${Math.min(porcentaje, 100)}%"></div>
           </div>
           <p class="budget-percentage">${porcentaje}% utilizado</p>
           <p class="budget-period">${p.periodo_inicio} → ${p.periodo_fin}</p>
-          ${excedido ? '<p class="budget-alert">⚠️ Presupuesto superado</p>' : ''}
+          ${excedido ? '<p class="budget-alert">⚠️ Budget exceeded</p>' : ''}
         </div>
       `;
     }).join('');
@@ -624,11 +706,11 @@ async function loadBudgets() {
 }
 
 async function deleteBudget(id) {
-  if (!confirm("¿Eliminar este presupuesto?")) return;
+  if (!confirm("Delete this budget?")) return;
   
   try {
     await fetchAPI(`/api/presupuestos/${id}`, { method: "DELETE" });
-    alert("✅ Presupuesto eliminado");
+    alert("✅ Budget deleted");
     await loadBudgets();
   } catch (err) {
     console.error("❌ Error al eliminar:", err);
@@ -660,9 +742,9 @@ async function loadReports() {
     const reportGastos = document.getElementById('report-gastos');
     const reportBalance = document.getElementById('report-balance');
     
-    if (reportIngresos) reportIngresos.textContent = `$${balance.ingresos.toFixed(2)}`;
-    if (reportGastos) reportGastos.textContent = `$${balance.gastos.toFixed(2)}`;
-    if (reportBalance) reportBalance.textContent = `$${balance.balance.toFixed(2)}`;
+    if (reportIngresos) reportIngresos.textContent = `$${formatearPesos(balance.ingresos)}`;
+    if (reportGastos) reportGastos.textContent = `$${formatearPesos(balance.gastos)}`;
+    if (reportBalance) reportBalance.textContent = `$${formatearPesos(balance.balance)}`;
     
     transactions = [
       ...ingresos.map(i => ({ ...i, type: 'income', id: i.id_ingreso, fecha: i.fecha_ingreso })),
@@ -690,7 +772,7 @@ function renderChart(ingresos, gastos) {
   financeChart = new Chart(ctx, {
     type: 'doughnut',
     data: {
-      labels: ['Ingresos', 'Gastos'],
+      labels: ['Income', 'Expenses'],
       datasets: [{
         data: [ingresos, gastos],
         backgroundColor: ['#43a047', '#e53935'],
@@ -714,7 +796,7 @@ function renderChart(ingresos, gastos) {
             label: function(context) {
               const label = context.label || '';
               const value = context.parsed || 0;
-              return `${label}: $${value.toFixed(2)}`;
+              return `${label}: $${formatearPesos(value)}`;
             }
           }
         }
@@ -727,14 +809,14 @@ function renderReportTransactions(filter) {
   currentFilter = filter;
   
   let filteredTransactions = transactions;
-  let filterLabel = '(Todas)';
+  let filterLabel = '(ALL)';
   
   if (filter === 'income') {
     filteredTransactions = transactions.filter(t => t.type === 'income');
-    filterLabel = '(Solo Ingresos)';
+    filterLabel = '(Only Income)';
   } else if (filter === 'expense') {
     filteredTransactions = transactions.filter(t => t.type === 'expense');
-    filterLabel = '(Solo Gastos)';
+    filterLabel = '(Only Expenses)';
   }
   
   const filterLabelElement = document.getElementById('filter-label');
@@ -747,7 +829,7 @@ function renderReportTransactions(filter) {
   if (!lista) return;
   
   if (filteredTransactions.length === 0) {
-    lista.innerHTML = '<li>No hay transacciones para mostrar.</li>';
+    lista.innerHTML = '<li>No transactions to show.</li>';
     return;
   }
   
@@ -755,10 +837,10 @@ function renderReportTransactions(filter) {
     <li>
       <div>
         <strong>${t.descripcion}</strong>
-        <small>${t.categoria || 'Sin categoría'} - ${t.fecha}</small>
+        <small>${t.categoria || 'Uncategorized'} - ${t.fecha}</small>
       </div>
       <span class="${t.type === 'expense' ? 'transaction-expense' : 'transaction-income'}">
-        ${t.type === 'income' ? '+' : '-'}$${parseFloat(t.monto).toFixed(2)}
+        ${t.type === 'income' ? '+' : '-'}${formatearPesos(parseFloat(t.monto))}
       </span>
     </li>
   `).join('');
@@ -785,22 +867,18 @@ if (reportAddIncomeBtn) {
 }
 
 // === DESCRIPCIONES ===
-// Agregar la pantalla al objeto screens
 screens.descriptions = document.getElementById('descriptions-screen');
 
-// Evento para el botón "Descripciones" en el dashboard
 document.getElementById("manage-descriptions")?.addEventListener('click', () => {
   console.log("📝 Ir a descripciones");
   loadDescriptions();
   navigateTo(screens.descriptions);
 });
 
-// Botón de volver desde descripciones
 document.getElementById('back-from-descriptions')?.addEventListener('click', () => {
   navigateTo(screens.dashboard);
 });
 
-// Mostrar formulario de nueva descripción
 document.getElementById('show-description-form')?.addEventListener('click', () => {
   const formContainer = document.getElementById('description-form-container');
   if (formContainer) {
@@ -809,7 +887,6 @@ document.getElementById('show-description-form')?.addEventListener('click', () =
   }
 });
 
-// Cancelar formulario
 document.getElementById('cancel-description')?.addEventListener('click', () => {
   const formContainer = document.getElementById('description-form-container');
   const form = document.getElementById('description-form');
@@ -819,20 +896,16 @@ document.getElementById('cancel-description')?.addEventListener('click', () => {
   }
 });
 
-// Tabs de gastos/ingresos
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     const type = btn.getAttribute('data-type');
     document.getElementById('description-type').value = type;
-    
-    // Cargar categorías según el tipo
     loadCategories(type, 'description-category');
   });
 });
 
-// Enviar formulario de descripción
 document.getElementById('description-form')?.addEventListener('submit', async (e) => {
   e.preventDefault();
   
@@ -849,7 +922,7 @@ document.getElementById('description-form')?.addEventListener('submit', async (e
       body: JSON.stringify(descripcion)
     });
 
-    alert("✅ Descripción guardada exitosamente");
+    alert("✅ Description saved successfully");
     const form = document.getElementById('description-form');
     const formContainer = document.getElementById('description-form-container');
     
@@ -865,7 +938,6 @@ document.getElementById('description-form')?.addEventListener('submit', async (e
   }
 });
 
-// Cargar descripciones
 async function loadDescriptions() {
   try {
     const tipo = document.querySelector('.tab-btn.active')?.getAttribute('data-type') || 'gasto';
@@ -876,7 +948,7 @@ async function loadDescriptions() {
     if (!lista) return;
     
     if (descripciones.length === 0) {
-      lista.innerHTML = '<li class="no-data">No hay descripciones registradas</li>';
+      lista.innerHTML = '<li class="no-data">No descriptions registered</li>';
       return;
     }
     
@@ -894,13 +966,12 @@ async function loadDescriptions() {
   }
 }
 
-// Eliminar descripción
 async function deleteDescription(id) {
-  if (!confirm("¿Eliminar esta descripción?")) return;
+  if (!confirm("Delete this description?")) return;
   
   try {
     await fetchAPI(`/api/descripciones/${id}`, { method: "DELETE" });
-    alert("✅ Descripción eliminada");
+    alert("✅ Description deleted");
     await loadDescriptions();
   } catch (err) {
     console.error("❌ Error al eliminar:", err);
@@ -908,7 +979,6 @@ async function deleteDescription(id) {
   }
 }
 
-// Búsqueda de descripciones
 document.getElementById('search-descriptions')?.addEventListener('input', (e) => {
   const searchTerm = e.target.value.toLowerCase();
   const items = document.querySelectorAll('#descriptions-list-items li:not(.no-data)');
@@ -923,14 +993,12 @@ document.getElementById('search-descriptions')?.addEventListener('input', (e) =>
   });
 });
 
-// Exportar funciones globales
 window.deleteDescription = deleteDescription;
 
 // === INICIO DE LA APLICACIÓN ===
 console.log("🚀 OG Kash iniciado");
 console.log("🔗 Conectando a:", API_URL);
 
-// Verificar que exista la pantalla de autenticación antes de navegar
 if (screens.auth) {
   navigateTo(screens.auth);
   console.log("✅ Aplicación lista");
