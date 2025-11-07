@@ -49,7 +49,25 @@ body {
 .hidden {
     display: none !important;
 }
+.page-logo-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 0;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #e0e0e0;
+}
 
+.page-logo-header img {
+    width: 150px;  /* Tamaño normal para otras páginas */
+    height: auto;
+}
+
+/* Logo pequeño SOLO para el dashboard */
+#dashboard-screen .page-logo-header img {
+    width: 80px;  /* ✅ Pequeño solo en dashboard */
+    height: auto;
+}
 /* --- Estilos de Autenticación --- */
 #auth-screen {
     display: flex;
