@@ -287,7 +287,9 @@ document.getElementById('show-login')?.addEventListener('click', () => {
   elements.signupForm?.classList.add('hidden');
   elements.loginForm?.classList.remove('hidden');
 });
-
+document.querySelector('.forgot-password')?.addEventListener('click', () => {
+  alert('🔒 Password recovery feature coming soon!\n\nPlease contact support at:\nsupport@ogkash.com');
+});
 elements.signupForm?.addEventListener("submit", async e => {
   e.preventDefault();
   console.log("📝 Registro iniciado");
@@ -308,25 +310,25 @@ elements.signupForm?.addEventListener("submit", async e => {
       body: JSON.stringify({ nombre, correo, contrasena })
     });
     
-    alert(`✅ ${data.nombre} registrado. Ya puedes iniciar sesión.`);
+    alert(`✅ ${data.nombre} Registered. You can now log in.`);
     elements.signupForm.reset();
     elements.signupForm.classList.add('hidden');
     elements.loginForm.classList.remove('hidden');
   } catch (err) {
-    console.error("❌ Error al registrar:", err);
+    console.error("❌ Error registering:", err);
     alert(`❌ ${err.message}`);
   }
 });
 
 elements.loginForm?.addEventListener("submit", async (e) => {
   e.preventDefault();
-  console.log("🔐 Login iniciado");
+  console.log("🔐 Login successful");
   
   const nombre = document.getElementById("login-user")?.value.trim();
   const contrasena = document.getElementById("login-password")?.value.trim();
   
   if (!nombre || !contrasena) {
-    alert("⚠️ Por favor completa todos los campos");
+    alert("Please fill in all fields.");
     return;
   }
   
@@ -342,7 +344,8 @@ elements.loginForm?.addEventListener("submit", async (e) => {
     console.log("📥 Respuesta del servidor:", data);
 
     if (data.usuario) {
-      console.log("✅ Login exitoso");
+      console.log("✅ Login successful");
+      alert(`✅ Welcome ${data.usuario.nombre}! You have successfully logged in.`);
       user = data.usuario.nombre;
       userId = data.usuario.id_usuario;
       
