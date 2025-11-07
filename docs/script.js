@@ -353,7 +353,7 @@ elements.loginForm?.addEventListener("submit", async (e) => {
         elements.currentUser.textContent = user;
       }
       
-      console.log("📊 Cargando datos del usuario...");
+      console.log("📊 Loading user data...");
       
       await Promise.all([
         loadBalance(),
@@ -370,12 +370,12 @@ elements.loginForm?.addEventListener("submit", async (e) => {
       console.log("🚀 Navegando al dashboard...");
       navigateTo(screens.dashboard);
       
-      console.log("✅ Login completado exitosamente");
+      console.log("✅ All data loaded");
     } else {
-      throw new Error("Respuesta inválida del servidor");
+      throw new Error("Invalid server response");
     }
   } catch (error) {
-    console.error("🚨 Error en login:", error);
+    console.error("🚨 Login error:", error);
     alert(`❌ ${error.message || "Error al iniciar sesión"}`);
   }
 });
@@ -542,7 +542,7 @@ document.getElementById('expense-form')?.addEventListener('submit', async e => {
     );
     
     if (presupuestoAfectado) {
-      alert(`⚠️ ¡ALERTA! Has alcanzado o superado el presupuesto de ${gasto.categoria}\nLimit: $${formatearPesos(presupuestoAfectado.monto_limite)}\nGastado: $${formatearPesos(presupuestoAfectado.gastado)}`);
+      alert(`⚠️ Warning! You’ve reached or exceeded your budget for ${gasto.categoria}\nLimit: $${formatearPesos(presupuestoAfectado.monto_limite)}\nSpent: $${formatearPesos(presupuestoAfectado.gastado)}`);
     }
     
     document.getElementById("expense-form").reset();
@@ -550,7 +550,7 @@ document.getElementById('expense-form')?.addEventListener('submit', async e => {
     setTodayDate('expense-date');
     await Promise.all([loadBalance(), loadTransactions(), loadExpenseList()]);
   } catch (error) {
-    console.error("❌ Error al guardar gasto:", error);
+    console.error("❌ Error saving expense:", error);
     alert(`❌ ${error.message}`);
   }
 });
@@ -580,7 +580,7 @@ async function loadExpenseList() {
       </li>
     `).join('');
   } catch (err) {
-    console.error("❌ Error al cargar gastos:", err);
+    console.error("❌ Error loading expenses:", err);
   }
 }
 
@@ -757,9 +757,9 @@ async function loadReports() {
     renderChart(balance.ingresos, balance.gastos);
     renderReportTransactions(currentFilter);
     
-    console.log("✅ Reportes cargados");
+    console.log("✅ Reports loaded");
   } catch (err) {
-    console.error("❌ Error al cargar reportes:", err);
+    console.error("❌ Error loading reports:", err);
     alert(`❌ ${err.message}`);
   }
 }
@@ -936,7 +936,7 @@ document.getElementById('description-form')?.addEventListener('submit', async (e
     
     await loadDescriptions();
   } catch (error) {
-    console.error("❌ Error al guardar descripción:", error);
+    console.error("❌ Error saving description:", error);
     alert(`❌ ${error.message}`);
   }
 });
@@ -965,7 +965,7 @@ async function loadDescriptions() {
       </li>
     `).join('');
   } catch (err) {
-    console.error("❌ Error al cargar descripciones:", err);
+    console.error("❌ Error loading descriptions:", err);
   }
 }
 
@@ -977,7 +977,7 @@ async function deleteDescription(id) {
     alert("✅ Description deleted");
     await loadDescriptions();
   } catch (err) {
-    console.error("❌ Error al eliminar:", err);
+    console.error("❌ Error deleting description:", err);
     alert(`❌ ${err.message}`);
   }
 }
